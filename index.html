@@ -13,7 +13,7 @@
 
 
     <link href="http://example.org/index.xml" rel="alternate" type="application/rss+xml" title="Boris Wilhelms" />
-    <link rel="shortcut icon" href="/favicon.png">
+    <link rel="shortcut icon" href="./favicon.png">
 
     <link href="http://example.org/webfonts/ptserif/main.css" rel='stylesheet' type='text/css'>
     <link href="http://example.org/webfonts/source-code-pro/main.css" rel="stylesheet" type="text/css">
@@ -51,6 +51,46 @@
     </div>
 </header>
     <section id="main" class="outer">
+        
+        <article class="article article-type-post" itemscope itemprop="blogPost">
+            <div class="article-inner">
+                
+                
+                <header class="article-header">
+                    <h1 itemprop="name"><a class="article-title" href="./post/access-certificates-in-azure/">Access certificates in Azure</a></h1>
+                </header>
+                
+                <div class="article-meta">
+                    <a href="./post/access-certificates-in-azure/" class="article-date">
+                        <time datetime='2017-05-03T12:45:42.000&#43;02:00' itemprop="datePublished">2017-05-03</time>
+                    </a>
+                    
+                    
+                    <div class="post-categories">
+                        <div class="article-category">
+                            
+                            
+                            <a class="article-category-link" href="http://example.org//categories/azure">Azure</a>
+                            
+                        </div>
+                    </div>
+                    
+                    
+                </div>
+                <div class="article-entry" itemprop="articleBody">
+                    <p>
+                        
+                    Thanks to this Stackoverflow post for the tip.
+After uploading the certificate using the Azure Portal, we need to add an appsetting called WEBSITE_LOAD_CERTIFICATES. The value of the setting is the thumbprint of the certificate. We can also pass multiple thumbprints, delimited by comma or use * to load all available certificates. After this the certificates will be loaded to the web application personal certificate store. The certificate can then be accessed by code
+                    </p>
+                    <p class="article-more-link">
+                        <a href="./post/access-certificates-in-azure/">Read More</a>
+                    </p>
+                </div>
+
+                
+            </div>
+        </article>
         
 
         

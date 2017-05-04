@@ -2,18 +2,18 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Tags // Boris Wilhelms</title>
+    <title>Access certificates in Azure // Boris Wilhelms</title>
 
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-    <meta property="og:title" content="Tags" />
+    <meta property="og:title" content="Access certificates in Azure" />
 <meta property="og:description" content="" />
 <meta property="og:type" content="website" />
 <meta property="og:locale" content="en_US" />
-<meta property="og:url" content="http://example.org/tags/" />
+<meta property="og:url" content="http://example.org/post/access-certificates-in-azure/" />
 
 
-    <link href="http://example.org/tags/index.xml" rel="alternate" type="application/rss+xml" title="Boris Wilhelms" />
-    <link rel="shortcut icon" href="../favicon.png">
+    <link href="" rel="alternate" type="application/rss+xml" title="Boris Wilhelms" />
+    <link rel="shortcut icon" href="../../favicon.png">
 
     <link href="http://example.org/webfonts/ptserif/main.css" rel='stylesheet' type='text/css'>
     <link href="http://example.org/webfonts/source-code-pro/main.css" rel="stylesheet" type="text/css">
@@ -33,6 +33,7 @@
     <meta name="generator" content="Hugo 0.20.6" />
 </head>
 
+
 <body>
 <div id="container">
     <header id="header">
@@ -51,19 +52,59 @@
     </div>
 </header>
     <section id="main" class="outer">
-        <section class="layout-wrap">
-            <div class="layout-title">
-                <span>Tags</span>
+        <article class="article article-type-post" itemscope itemprop="blogPost">
+    <div class="article-inner">
+        
+        <header class="article-header">
+            <h1 class="article-title" itemprop="name">Access certificates in Azure</h1>
+        </header>
+        
+        <div class="article-meta">
+            <a href="../../post/access-certificates-in-azure/" class="article-date">
+                <time datetime='2017-05-03T12:45:42.000&#43;02:00' itemprop="datePublished">2017-05-03</time>
+            </a>
+            
+            
+            <div class="post-categories">
+                <div class="article-category">
+                    
+                    
+                    <a class="article-category-link" href="http://example.org//categories/azure">Azure</a>
+                    
+                </div>
             </div>
-            <div class="layout-wrap-inner tag-cloud">
-                
-                
-                <ul>
-                
-                </ul>
-            </div>
+            
+            
+        </div>
+        <div class="article-entry" itemprop="articleBody">
+            <p>Thanks to this <a href="http://stackoverflow.com/questions/23827884/accessing-uploaded-certificates-in-azure-web-sites">Stackoverflow post</a> for the tip.</p>
 
-        </section>
+<p>After uploading the certificate using the Azure Portal, we need to add an appsetting called <em>WEBSITE_LOAD_CERTIFICATES</em>. The value of the setting is the thumbprint of the certificate. We can also pass multiple thumbprints, delimited by comma or use * to load all available certificates. After this the certificates will be loaded to the web application personal certificate store. The certificate can then be accessed by code</p>
+
+<pre><code class="language-csharp">var store = new X509Store(StoreName.My, StoreLocation.CurrentUser);
+store.Open(OpenFlags.ReadOnly);
+
+var certs = store.Certificates.Find(X509FindType.FindByThumbprint, YOUR_THUMBPRINT, false);
+</code></pre>
+
+        </div>
+
+        
+        
+        
+
+        
+
+
+        
+    </div>
+    <nav id="article-nav">
+    
+    
+</nav>
+</article>
+
+        
     </section>
     <footer id="footer">
     <div class="outer">
