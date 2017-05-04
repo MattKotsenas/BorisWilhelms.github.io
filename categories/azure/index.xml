@@ -2,21 +2,21 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Azure on Boris Wilhelms</title>
-    <link>http://example.org/categories/azure/</link>
+    <link>https://boriswilhelms.github.io/categories/azure/</link>
     <description>Recent content in Azure on Boris Wilhelms</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>de-DE</language>
     <lastBuildDate>Wed, 03 May 2017 12:45:42 +0200</lastBuildDate>
     
-	<atom:link href="http://example.org/categories/azure/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="https://boriswilhelms.github.io/categories/azure/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>Access certificates in Azure</title>
-      <link>http://example.org/post/access-certificates-in-azure/</link>
+      <link>https://boriswilhelms.github.io/post/access-certificates-in-azure/</link>
       <pubDate>Wed, 03 May 2017 12:45:42 +0200</pubDate>
       
-      <guid>http://example.org/post/access-certificates-in-azure/</guid>
+      <guid>https://boriswilhelms.github.io/post/access-certificates-in-azure/</guid>
       <description>Thanks to this Stackoverflow post for the tip.
 After uploading the certificate using the Azure Portal, we need to add an appsetting called WEBSITE_LOAD_CERTIFICATES. The value of the setting is the thumbprint of the certificate. We can also pass multiple thumbprints, delimited by comma or use * to load all available certificates. After this the certificates will be loaded to the web application personal certificate store. The certificate can then be accessed by code</description>
     </item>
