@@ -17,8 +17,10 @@
       <pubDate>Wed, 03 May 2017 12:45:42 +0200</pubDate>
       
       <guid>https://boriswilhelms.github.io/post/access-certificates-in-azure/</guid>
-      <description>Thanks to this Stackoverflow post for the tip.
-After uploading the certificate using the Azure Portal, we need to add an appsetting called WEBSITE_LOAD_CERTIFICATES. The value of the setting is the thumbprint of the certificate. We can also pass multiple thumbprints, delimited by comma or use * to load all available certificates. After this the certificates will be loaded to the web application personal certificate store. The certificate can then be accessed by code</description>
+      <description>&lt;p&gt;Thanks to this &lt;a href=&#34;http://stackoverflow.com/questions/23827884/accessing-uploaded-certificates-in-azure-web-sites&#34;&gt;Stackoverflow post&lt;/a&gt; for the tip.&lt;/p&gt;
+
+&lt;p&gt;After uploading the certificate using the Azure Portal, you need to add an appsetting called &lt;em&gt;WEBSITE_LOAD_CERTIFICATES&lt;/em&gt;. The value of the setting is the thumbprint of the certificate. We can also pass multiple thumbprints, delimited by comma or use * to load all available certificates. After this the certificates will be loaded to the &lt;em&gt;personal&lt;/em&gt; certificate store of the &lt;em&gt;current user&lt;/em&gt;.
+&lt;/p&gt;</description>
     </item>
     
   </channel>

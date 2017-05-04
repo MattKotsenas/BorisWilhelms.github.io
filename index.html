@@ -28,7 +28,7 @@
 
     <meta name="description" content="">
     <meta name="keywords" content="">
-    <meta name="author" content="">
+    <meta name="author" content="Boris Wilhelms">
 
     <meta name="generator" content="Hugo 0.20.6" />
 </head>
@@ -41,6 +41,8 @@
             <a id="main-nav-toggle" class="nav-icon" href="javascript:;"></a>
             <a id="logo" class="logo-text" href="https://boriswilhelms.github.io/">Boris Wilhelms</a>
             <nav id="main-nav">
+                
+                <a class="main-nav-link" href="./about">About me</a>
                 
             </nav>
             <nav id="sub-nav">
@@ -80,14 +82,32 @@
                 <div class="article-entry" itemprop="articleBody">
                     <p>
                         
-                    Thanks to this Stackoverflow post for the tip.
-After uploading the certificate using the Azure Portal, we need to add an appsetting called WEBSITE_LOAD_CERTIFICATES. The value of the setting is the thumbprint of the certificate. We can also pass multiple thumbprints, delimited by comma or use * to load all available certificates. After this the certificates will be loaded to the web application personal certificate store. The certificate can then be accessed by code
+                    <p>Thanks to this <a href="http://stackoverflow.com/questions/23827884/accessing-uploaded-certificates-in-azure-web-sites">Stackoverflow post</a> for the tip.</p>
+
+<p>After uploading the certificate using the Azure Portal, you need to add an appsetting called <em>WEBSITE_LOAD_CERTIFICATES</em>. The value of the setting is the thumbprint of the certificate. We can also pass multiple thumbprints, delimited by comma or use * to load all available certificates. After this the certificates will be loaded to the <em>personal</em> certificate store of the <em>current user</em>.
+</p>
                     </p>
                     <p class="article-more-link">
                         <a href="./post/access-certificates-in-azure/">Read More</a>
                     </p>
                 </div>
 
+                
+                <footer class="article-footer">
+                    <ul class="article-tag-list">
+                        
+                        <li class="article-tag-list-item">
+                            <a class="article-tag-list-link" href="https://boriswilhelms.github.io//tags/azure">Azure
+                            </a>
+                        </li>
+                        
+                        <li class="article-tag-list-item">
+                            <a class="article-tag-list-link" href="https://boriswilhelms.github.io//tags/certificates">Certificates
+                            </a>
+                        </li>
+                        
+                    </ul>
+                </footer>
                 
             </div>
         </article>
