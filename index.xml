@@ -6,10 +6,20 @@
     <description>Recent content on Boris Wilhelms</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>de-DE</language>
-    <lastBuildDate>Thu, 04 May 2017 21:39:08 +0200</lastBuildDate>
+    <lastBuildDate>Fri, 26 May 2017 19:23:46 +0200</lastBuildDate>
     
 	<atom:link href="http://blog.wille-zone.de/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Disable Application Insights correlation id headers on HttpClient requests in ASP.NET Core</title>
+      <link>http://blog.wille-zone.de/post/disable-application-insights-correlation-id-headers-on-httpclient-requests-in-aspnet-core/</link>
+      <pubDate>Fri, 26 May 2017 19:23:46 +0200</pubDate>
+      
+      <guid>http://blog.wille-zone.de/post/disable-application-insights-correlation-id-headers-on-httpclient-requests-in-aspnet-core/</guid>
+      <description>With the upcoming version (2.1) of the Application Insights package for ASP.NET Core all requests made with HttpClient (and probably other clients) will have addition request headers, contain correlation ids. This is part of the dependency tracking feature. These headers are Request-Context, Request-Id, x-ms-request-id and x-ms-request-root-id.
+While this is usually not a problem, it might break functionality in some cases. For example in 2.1.0-beta2 it broke the request signature for Azure Storage requests.</description>
+    </item>
     
     <item>
       <title>About me</title>
@@ -17,7 +27,8 @@
       <pubDate>Thu, 04 May 2017 21:39:08 +0200</pubDate>
       
       <guid>http://blog.wille-zone.de/about/</guid>
-      <description>I am working as a Software Developer / Consultant at Thinktecture in Frankfurt am Main / Germany.</description>
+      <description>I am a passionate Software Developer / Consultant working at Thinktecture in Frankfurt am Main / Germany.
+You can contact via mail: mail@wille-zone.de.</description>
     </item>
     
     <item>
@@ -26,7 +37,7 @@
       <pubDate>Wed, 03 May 2017 12:45:42 +0200</pubDate>
       
       <guid>http://blog.wille-zone.de/post/access-certificates-in-azure/</guid>
-      <description>&lt;p&gt;Thanks to this &lt;a href=&#34;http://stackoverflow.com/questions/23827884/accessing-uploaded-certificates-in-azure-web-sites&#34;&gt;Stackoverflow post&lt;/a&gt; for the tip.&lt;/p&gt;
+      <description>&lt;p&gt;Thanks to this &lt;a href=&#34;http://stackoverflow.com/questions/23827884/accessing-uploaded-certificates-in-azure-web-sites&#34; target=&#34;_blank&#34;&gt;Stackoverflow post&lt;/a&gt; for the tip.&lt;/p&gt;
 
 &lt;p&gt;After uploading the certificate using the Azure Portal, you need to add an appsetting called &lt;em&gt;WEBSITE_LOAD_CERTIFICATES&lt;/em&gt;. The value of the setting is the thumbprint of the certificate. We can also pass multiple thumbprints, delimited by comma or use * to load all available certificates. After this the certificates will be loaded to the &lt;em&gt;personal&lt;/em&gt; certificate store of the &lt;em&gt;current user&lt;/em&gt;.
 &lt;/p&gt;</description>

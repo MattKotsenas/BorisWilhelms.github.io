@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Disable Application Insights correlation id headers on HttpClient requests in ASP.NET Core // Boris Wilhelms</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta property="og:title" content="Disable Application Insights correlation id headers on HttpClient requests in ASP.NET Core" />
+<meta property="og:description" content="How to disable Application Insights correlation id headers on HttpClient requests in ASP.NET Core." />
+<meta property="og:type" content="website" />
+<meta property="og:locale" content="en_US" />
+<meta property="og:url" content="http://blog.wille-zone.de/post/disable-application-insights-correlation-id-headers-on-httpclient-requests-in-aspnet-core/" />
+
+
+    <link href="" rel="alternate" type="application/rss+xml" title="Boris Wilhelms" />
+    <link rel="shortcut icon" href="../../favicon.png">
+
+    <link href="http://blog.wille-zone.de/webfonts/ptserif/main.css" rel='stylesheet' type='text/css'>
+    <link href="http://blog.wille-zone.de/webfonts/source-code-pro/main.css" rel="stylesheet" type="text/css">
+
+    <link rel="stylesheet" href="http://blog.wille-zone.de/css/style.css">
+
+    <link href="http://gmpg.org/xfn/11" rel="profile">
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+    <meta name="description" content="How to disable Application Insights correlation id headers on HttpClient requests in ASP.NET Core.">
+    <meta name="keywords" content="Application Insights,Correlation ID,dependency tracking,">
+    <meta name="author" content="Boris Wilhelms">
+
+    <meta name="generator" content="Hugo 0.20.6" />
+</head>
+
+
+<body>
+<div id="container">
+    <header id="header">
+    <div id="header-outer" class="outer">
+        <div id="header-inner" class="inner">
+            <a id="main-nav-toggle" class="nav-icon" href="javascript:;"></a>
+            <a id="logo" class="logo-text" href="http://blog.wille-zone.de/">Boris Wilhelms</a>
+            <nav id="main-nav">
+                
+                <a class="main-nav-link" href="../../about">About me</a>
+                
+            </nav>
+            <nav id="sub-nav">
+                <div id="search-form-wrap">
+                </div>
+            </nav>
+        </div>
+    </div>
+</header>
+    <section id="main" class="outer">
+        <article class="article article-type-post" itemscope itemprop="blogPost">
+    <div class="article-inner">
+        
+        <header class="article-header">
+            <h1 class="article-title" itemprop="name">Disable Application Insights correlation id headers on HttpClient requests in ASP.NET Core</h1>
+        </header>
+        
+        <div class="article-meta">
+            <a href="../../post/disable-application-insights-correlation-id-headers-on-httpclient-requests-in-aspnet-core/" class="article-date">
+                <time datetime='2017-05-26T19:23:46.000&#43;02:00' itemprop="datePublished">2017-05-26</time>
+            </a>
+            
+            
+            
+        </div>
+        <div class="article-entry" itemprop="articleBody">
+            
+
+<p>With the upcoming version (2.1) of the Application Insights package for ASP.NET Core all requests made with HttpClient (and probably other clients) will have addition request headers, contain correlation ids. This is part of the <a href="https://docs.microsoft.com/en-gb/azure/application-insights/app-insights-asp-net-dependencies" target="_blank">dependency tracking</a> feature. These headers are <code>Request-Context</code>, <code>Request-Id</code>, <code>x-ms-request-id</code> and <code>x-ms-request-root-id</code>.</p>
+
+<p><img src="../../images/AI-Correlation-IDs.PNG" alt="Correlation Id on http requests" /></p>
+
+<p>While this is usually not a problem, it might break functionality in some cases. For example in 2.1.0-beta2 it broke the request signature for <a href="https://github.com/Microsoft/ApplicationInsights-aspnetcore/issues/416" target="_blank">Azure Storage requests</a>. If you need (or want) to disable this feature there are several ways.</p>
+
+<h2 id="disable-per-domain">Disable per domain</h2>
+
+<p>If you want to disable the correlation id headers per domain use the following snippet in the <code>Configure</code> method of the startup class</p>
+
+<pre><code class="language-csharp">var modules = app.ApplicationServices.GetServices&lt;ITelemetryModule&gt;();
+var dependencyModule = modules.OfType&lt;DependencyTrackingTelemetryModule&gt;().FirstOrDefault();
+
+if (dependencyModule != null)
+{
+    var domains = dependencyModule.ExcludeComponentCorrelationHttpHeadersOnDomains;
+    domains.Add(&quot;blog.wille-zone.de&quot;);
+}
+</code></pre>
+
+<p>This snippet will prevent that the correlation id headers are added to requests that are made to <code>blog.wille-zone.de</code>.</p>
+
+<h2 id="disable-correlation-id-headers-completely">Disable correlation id headers completely</h2>
+
+<p>If you want to disable the correlation id headers completely, remove the original <code>DependencyTrackingTelemetryModule</code> from the <code>ServiceCollection</code> in the <code>ConfigureService</code> method of the startup class and add your own custom initialization.</p>
+
+<pre><code class="language-csharp">var module = services.FirstOrDefault(t =&gt; t.ImplementationFactory?.GetType() == typeof(Func&lt;IServiceProvider, DependencyTrackingTelemetryModule&gt;));
+if (module != null)
+{
+    services.Remove(module);
+    services.AddSingleton&lt;ITelemetryModule&gt;(provider =&gt; new DependencyTrackingTelemetryModule() { SetComponentCorrelationHttpHeaders = false });
+}
+</code></pre>
+
+<h2 id="disable-dependency-tracking">Disable dependency tracking</h2>
+
+<p>If you want to disable <em>dependency tracking</em> completely, just remove the <code>DependencyTrackingTelemetryModule</code> from the <code>ServiceCollection</code> in the <code>ConfigureService</code> method of the startup class.</p>
+
+<pre><code class="language-csharp">var module = services.FirstOrDefault(t =&gt; t.ImplementationFactory?.GetType() == typeof(Func&lt;IServiceProvider, DependencyTrackingTelemetryModule&gt;));
+if (module != null)
+{
+    services.Remove(module);
+}
+</code></pre>
+
+<p>A full example project with all three possible ways can be found at <a href="https://github.com/BorisWilhelms/AI-DependencyTracking/tree/master/src/AI-DependencyTracking" target="_blank">Github</a>.</p>
+
+        </div>
+
+        
+        
+        <div class="article-toc" >
+            <h3>Contents</h3>
+            <nav id="TableOfContents">
+<ul>
+<li>
+<ul>
+<li><a href="#disable-per-domain">Disable per domain</a></li>
+<li><a href="#disable-correlation-id-headers-completely">Disable correlation id headers completely</a></li>
+<li><a href="#disable-dependency-tracking">Disable dependency tracking</a></li>
+</ul></li>
+</ul>
+</nav>
+        </div>
+        
+        
+
+        
+
+
+        
+        <footer class="article-footer">
+            <ul class="article-tag-list">
+                
+                <li class="article-tag-list-item">
+                    <a class="article-tag-list-link" href="http://blog.wille-zone.de//tags/application-insights">Application Insights
+                    </a>
+                </li>
+                
+                <li class="article-tag-list-item">
+                    <a class="article-tag-list-link" href="http://blog.wille-zone.de//tags/asp.net-core">ASP.NET Core
+                    </a>
+                </li>
+                
+            </ul>
+        </footer>
+        
+    </div>
+</article>
+
+        
+    </section>
+    <footer id="footer">
+    <div class="outer">
+        <div id="footer-info" class="inner">
+            &copy; 2017 Boris Wilhelms&nbsp;
+            Powered by <a href="https://gohugo.io" target="_blank">Hugo</a> with theme <a href="https://github.com/carsonip/hugo-theme-minos">Minos</a>
+        </div>
+    </div>
+    <script>
+window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+ga('create', 'UA-98632338-1', 'auto');
+ga('send', 'pageview');
+ga('set', 'anonymizeIp', true);
+</script>
+<script async src='//www.google-analytics.com/analytics.js'></script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.9.0/styles/tomorrow-night.min.css" integrity="sha256-2wL88NKUqvJi/ExflDzkzUumjUM73mcK2gBvBBeLvTk=" crossorigin="anonymous" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.9.0/highlight.min.js" integrity="sha256-KbfTjB0WZ8vvXngdpJGY3Yp3xKk+tttbqClO11anCIU=" crossorigin="anonymous"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+
+    
+    <script>
+        document.getElementById('main-nav-toggle').addEventListener('click', function () {
+            var header = document.getElementById('header');
+            if (header.classList.contains('mobile-on')) {
+                header.classList.remove('mobile-on');
+            } else {
+                header.classList.add('mobile-on');
+            }
+        });
+    </script>
+</footer>
+</div>
+</body>
+</html>

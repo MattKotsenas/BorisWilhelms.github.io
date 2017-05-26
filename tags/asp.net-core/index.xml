@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Posts on Boris Wilhelms</title>
-    <link>http://blog.wille-zone.de/post/</link>
-    <description>Recent content in Posts on Boris Wilhelms</description>
+    <title>Asp.Net Core on Boris Wilhelms</title>
+    <link>http://blog.wille-zone.de/tags/asp.net-core/</link>
+    <description>Recent content in Asp.Net Core on Boris Wilhelms</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>de-DE</language>
     <lastBuildDate>Fri, 26 May 2017 19:23:46 +0200</lastBuildDate>
     
-	<atom:link href="http://blog.wille-zone.de/post/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="http://blog.wille-zone.de/tags/asp.net-core/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
@@ -19,18 +19,6 @@
       <guid>http://blog.wille-zone.de/post/disable-application-insights-correlation-id-headers-on-httpclient-requests-in-aspnet-core/</guid>
       <description>With the upcoming version (2.1) of the Application Insights package for ASP.NET Core all requests made with HttpClient (and probably other clients) will have addition request headers, contain correlation ids. This is part of the dependency tracking feature. These headers are Request-Context, Request-Id, x-ms-request-id and x-ms-request-root-id.
 While this is usually not a problem, it might break functionality in some cases. For example in 2.1.0-beta2 it broke the request signature for Azure Storage requests.</description>
-    </item>
-    
-    <item>
-      <title>Access certificates in Azure</title>
-      <link>http://blog.wille-zone.de/post/access-certificates-in-azure/</link>
-      <pubDate>Wed, 03 May 2017 12:45:42 +0200</pubDate>
-      
-      <guid>http://blog.wille-zone.de/post/access-certificates-in-azure/</guid>
-      <description>&lt;p&gt;Thanks to this &lt;a href=&#34;http://stackoverflow.com/questions/23827884/accessing-uploaded-certificates-in-azure-web-sites&#34; target=&#34;_blank&#34;&gt;Stackoverflow post&lt;/a&gt; for the tip.&lt;/p&gt;
-
-&lt;p&gt;After uploading the certificate using the Azure Portal, you need to add an appsetting called &lt;em&gt;WEBSITE_LOAD_CERTIFICATES&lt;/em&gt;. The value of the setting is the thumbprint of the certificate. We can also pass multiple thumbprints, delimited by comma or use * to load all available certificates. After this the certificates will be loaded to the &lt;em&gt;personal&lt;/em&gt; certificate store of the &lt;em&gt;current user&lt;/em&gt;.
-&lt;/p&gt;</description>
     </item>
     
   </channel>

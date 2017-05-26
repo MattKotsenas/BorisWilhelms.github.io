@@ -2,17 +2,17 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Certificates // Boris Wilhelms</title>
+    <title>Disable Application Insights Correlation Ids on HttpClient requests in ASP.NET Core // Boris Wilhelms</title>
 
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-    <meta property="og:title" content="Certificates" />
+    <meta property="og:title" content="Disable Application Insights Correlation Ids on HttpClient requests in ASP.NET Core" />
 <meta property="og:description" content="" />
 <meta property="og:type" content="website" />
 <meta property="og:locale" content="en_US" />
-<meta property="og:url" content="http://blog.wille-zone.de/tags/certificates/" />
+<meta property="og:url" content="http://blog.wille-zone.de/post/disable-application-insights-correlation-ids-in-aspnet-core/" />
 
 
-    <link href="http://blog.wille-zone.de/tags/certificates/index.xml" rel="alternate" type="application/rss+xml" title="Boris Wilhelms" />
+    <link href="" rel="alternate" type="application/rss+xml" title="Boris Wilhelms" />
     <link rel="shortcut icon" href="../../favicon.png">
 
     <link href="http://blog.wille-zone.de/webfonts/ptserif/main.css" rel='stylesheet' type='text/css'>
@@ -32,6 +32,7 @@
 
     <meta name="generator" content="Hugo 0.20.6" />
 </head>
+
 
 <body>
 <div id="container">
@@ -53,28 +54,39 @@
     </div>
 </header>
     <section id="main" class="outer">
-        <section class="archives-wrap">
-            <div class="archive-tag-wrap">
-                <span class="archive-tag">#Certificates</span>
-            </div>
-            <div class="archives">
-                
-                <article class="archive-article archive-type-post">
-    <div class="archive-article-inner">
-        <header class="archive-article-header">
-            <a href="../../post/access-certificates-in-azure/" class="archive-article-date">
-                <time datetime='2017-05-03T12:45:42.000&#43;02:00' itemprop="datePublished">2017 May 3</time>
-            </a>
-            <h1 itemprop="name">
-                <a class="archive-article-title" href="../../post/access-certificates-in-azure/">Access certificates in Azure</a>
-            </h1>
+        <article class="article article-type-post" itemscope itemprop="blogPost">
+    <div class="article-inner">
+        
+        <header class="article-header">
+            <h1 class="article-title" itemprop="name">Disable Application Insights Correlation Ids on HttpClient requests in ASP.NET Core</h1>
         </header>
-    </div>
-</article>
-                
-            </div></section>
+        
+        <div class="article-meta">
+            <a href="../../post/disable-application-insights-correlation-ids-in-aspnet-core/" class="article-date">
+                <time datetime='2017-05-26T19:23:46.000&#43;02:00' itemprop="datePublished">2017-05-26</time>
+            </a>
+            
+            
+            
+        </div>
+        <div class="article-entry" itemprop="articleBody">
+            <p>With the upcoming version (2.1) of the Application Insights package for ASP.NET Core all requests made with HttpClient (and probably other clients) will have addition request headers, contain correlation ids. These headers are <code>Request-Context</code>, <code>Request-Id</code>, <code>x-ms-request-id</code> and <code>x-ms-request-root-id</code>.
+<img src="../../images/AI-Correlation-IDs.png" alt="Correlation Id on http requests" /></p>
+
+        </div>
+
+        
+        
         
 
+        
+
+
+        
+    </div>
+</article>
+
+        
     </section>
     <footer id="footer">
     <div class="outer">
