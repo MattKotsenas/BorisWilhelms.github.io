@@ -1,49 +1,49 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Tags on Boris Wilhelms</title>
-    <link>http://blog.wille-zone.de/tags/</link>
-    <description>Recent content in Tags on Boris Wilhelms</description>
+    <title>Tags on Boris Wilhelms // Coding Blog</title>
+    <link>https://blog.wille-zone.de/tags/</link>
+    <description>Recent content in Tags on Boris Wilhelms // Coding Blog</description>
     <generator>Hugo -- gohugo.io</generator>
-    <language>de-DE</language>
+    <language>en-US</language>
     <lastBuildDate>Fri, 26 May 2017 19:23:46 +0200</lastBuildDate>
     
-	<atom:link href="http://blog.wille-zone.de/tags/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="https://blog.wille-zone.de/tags/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>Application Insights</title>
-      <link>http://blog.wille-zone.de/tags/application-insights/</link>
+      <link>https://blog.wille-zone.de/tags/application-insights/</link>
       <pubDate>Fri, 26 May 2017 19:23:46 +0200</pubDate>
       
-      <guid>http://blog.wille-zone.de/tags/application-insights/</guid>
+      <guid>https://blog.wille-zone.de/tags/application-insights/</guid>
       <description></description>
     </item>
     
     <item>
       <title>Asp.Net Core</title>
-      <link>http://blog.wille-zone.de/tags/asp.net-core/</link>
+      <link>https://blog.wille-zone.de/tags/asp.net-core/</link>
       <pubDate>Fri, 26 May 2017 19:23:46 +0200</pubDate>
       
-      <guid>http://blog.wille-zone.de/tags/asp.net-core/</guid>
+      <guid>https://blog.wille-zone.de/tags/asp.net-core/</guid>
       <description></description>
     </item>
     
     <item>
       <title>Azure</title>
-      <link>http://blog.wille-zone.de/tags/azure/</link>
+      <link>https://blog.wille-zone.de/tags/azure/</link>
       <pubDate>Wed, 03 May 2017 12:45:42 +0200</pubDate>
       
-      <guid>http://blog.wille-zone.de/tags/azure/</guid>
+      <guid>https://blog.wille-zone.de/tags/azure/</guid>
       <description></description>
     </item>
     
     <item>
       <title>Certificates</title>
-      <link>http://blog.wille-zone.de/tags/certificates/</link>
+      <link>https://blog.wille-zone.de/tags/certificates/</link>
       <pubDate>Wed, 03 May 2017 12:45:42 +0200</pubDate>
       
-      <guid>http://blog.wille-zone.de/tags/certificates/</guid>
+      <guid>https://blog.wille-zone.de/tags/certificates/</guid>
       <description></description>
     </item>
     

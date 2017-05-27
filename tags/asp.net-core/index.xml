@@ -1,22 +1,22 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Asp.Net Core on Boris Wilhelms</title>
-    <link>http://blog.wille-zone.de/tags/asp.net-core/</link>
-    <description>Recent content in Asp.Net Core on Boris Wilhelms</description>
+    <title>Asp.Net Core on Boris Wilhelms // Coding Blog</title>
+    <link>https://blog.wille-zone.de/tags/asp.net-core/</link>
+    <description>Recent content in Asp.Net Core on Boris Wilhelms // Coding Blog</description>
     <generator>Hugo -- gohugo.io</generator>
-    <language>de-DE</language>
+    <language>en-US</language>
     <lastBuildDate>Fri, 26 May 2017 19:23:46 +0200</lastBuildDate>
     
-	<atom:link href="http://blog.wille-zone.de/tags/asp.net-core/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="https://blog.wille-zone.de/tags/asp.net-core/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>Disable Application Insights correlation id headers on HttpClient requests in ASP.NET Core</title>
-      <link>http://blog.wille-zone.de/post/disable-application-insights-correlation-id-headers-on-httpclient-requests-in-aspnet-core/</link>
+      <link>https://blog.wille-zone.de/post/disable-application-insights-correlation-id-headers-on-httpclient-requests-in-aspnet-core/</link>
       <pubDate>Fri, 26 May 2017 19:23:46 +0200</pubDate>
       
-      <guid>http://blog.wille-zone.de/post/disable-application-insights-correlation-id-headers-on-httpclient-requests-in-aspnet-core/</guid>
+      <guid>https://blog.wille-zone.de/post/disable-application-insights-correlation-id-headers-on-httpclient-requests-in-aspnet-core/</guid>
       <description>With the upcoming version (2.1) of the Application Insights package for ASP.NET Core all requests made with HttpClient (and probably other clients) will have addition request headers, contain correlation ids. This is part of the dependency tracking feature. These headers are Request-Context, Request-Id, x-ms-request-id and x-ms-request-root-id.
 While this is usually not a problem, it might break functionality in some cases. For example in 2.1.0-beta2 it broke the request signature for Azure Storage requests.</description>
     </item>
