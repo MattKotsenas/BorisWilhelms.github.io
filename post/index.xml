@@ -6,10 +6,20 @@
     <description>Recent content in Posts on Boris Wilhelms // Coding Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-US</language>
-    <lastBuildDate>Fri, 26 May 2017 19:23:46 +0200</lastBuildDate>
+    <lastBuildDate>Thu, 20 Jul 2017 17:05:31 +0200</lastBuildDate>
     
 	<atom:link href="https://blog.wille-zone.de/post/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Secure Azure Functions with jwt token</title>
+      <link>https://blog.wille-zone.de/post/secure-azure-functions-with-jwt-token/</link>
+      <pubDate>Thu, 20 Jul 2017 17:05:31 +0200</pubDate>
+      
+      <guid>https://blog.wille-zone.de/post/secure-azure-functions-with-jwt-token/</guid>
+      <description>Out of the box it is only possible to secure your Azure Functions via Function Keys (API-Keys), which sometimes might not fit into your requirements. When using HttpTrigger we luckily have access to the current request and are therefor able to implement our own custom authentication/authorization methods. You could for example use jwt tokens to control authentication/authorization.
+Here is an example code on how to validate jwt tokens and controling access to your Azure Function.</description>
+    </item>
     
     <item>
       <title>Disable Application Insights correlation id headers on HttpClient requests in ASP.NET Core</title>
