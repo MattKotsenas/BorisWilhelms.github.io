@@ -6,10 +6,20 @@
     <description>Recent content in Posts on Boris Wilhelms // Coding Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-US</language>
-    <lastBuildDate>Thu, 20 Jul 2017 17:05:31 +0200</lastBuildDate>
+    <lastBuildDate>Thu, 14 Sep 2017 17:40:37 +0200</lastBuildDate>
     
 	<atom:link href="https://blog.wille-zone.de/post/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Build a photo gallery with Azure Functions</title>
+      <link>https://blog.wille-zone.de/post/build-a-photo-gallery-with-azure-functions/</link>
+      <pubDate>Thu, 14 Sep 2017 17:40:37 +0200</pubDate>
+      
+      <guid>https://blog.wille-zone.de/post/build-a-photo-gallery-with-azure-functions/</guid>
+      <description>With Azure Functions you can quickly build simple web applications. In this example you learn how to create a simple photo gallery with just three little functions. We will use Azure Blob Storage to store the files and Azure Table Storage to save metadata. You can find the example at GitHub.
+Creating thumbnails Since we do not want use the original picture as a thumbnail, we will create a function that creates proper thumbnails.</description>
+    </item>
     
     <item>
       <title>Secure Azure Functions with jwt token</title>

@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Build a photo gallery with Azure Functions // Boris Wilhelms // Coding Blog</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta property="og:title" content="Build a photo gallery with Azure Functions" />
+<meta property="og:description" content="How to build a simple photo gallery with Azure Functions and Storage" />
+<meta property="og:type" content="website" />
+<meta property="og:locale" content="en_US" />
+<meta property="og:url" content="https://blog.wille-zone.de/post/build-a-photo-gallery-with-azure-functions/" />
+
+
+    <link href="" rel="alternate" type="application/rss+xml" title="Boris Wilhelms // Coding Blog" />
+    <link rel="shortcut icon" href="../../favicon.png">
+
+    <link rel="stylesheet" href="../../css/main.css">
+
+    <link href="http://gmpg.org/xfn/11" rel="profile">
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+    <meta name="description" content="How to build a simple photo gallery with Azure Functions and Storage">
+    <meta name="keywords" content="Azure,Functions,Storage,">
+    <meta name="author" content="Boris Wilhelms">
+</head>
+
+<body>
+<div id="container">
+    <header id="header">
+    <div id="header-outer" class="outer">
+        <div id="header-inner" class="inner">
+            <a id="main-nav-toggle" class="nav-icon" href="javascript:;"></a>
+            <a id="logo" class="logo-text" href="../../">Boris Wilhelms // Coding Blog</a>
+            <nav id="main-nav">
+                
+                <a class="main-nav-link" href="../../about">About me</a>
+                
+            </nav>
+            <nav id="sub-nav">
+                <div id="search-form-wrap">
+                </div>
+            </nav>
+        </div>
+    </div>
+</header>
+    <section id="main" class="outer">
+        <article class="article article-type-post" itemscope itemprop="blogPost">
+    <div class="article-inner">
+        
+        <header class="article-header">
+            <h1 class="article-title" itemprop="name">Build a photo gallery with Azure Functions</h1>
+        </header>
+        
+        <div class="article-meta">
+            <a href="../../post/build-a-photo-gallery-with-azure-functions/" class="article-date">
+                <time datetime='2017-09-14T17:40:37.000&#43;02:00' itemprop="datePublished">2017-09-14</time>
+            </a>
+            
+            
+            
+        </div>
+        <div class="article-entry" itemprop="articleBody">
+            
+
+<p>With Azure Functions you can quickly build simple web applications. In this example you learn how to create a simple photo gallery with just <strong>three</strong> little functions. We will use Azure Blob Storage to store the files and Azure Table Storage to save metadata. You can find the example at <a href="https://github.com/BorisWilhelms/PhotoCloud" target="_blank">GitHub</a>.</p>
+
+<h1 id="creating-thumbnails">Creating thumbnails</h1>
+
+<p>Since we do not want use the original picture as a thumbnail, we will create a function that creates proper thumbnails. For this we can use the <em>Image Resizer</em> template that comes with Visual Studio. The code will look like this</p>
+
+<pre><code class="language-csharp">public static class CreateThumbnail
+{
+    [FunctionName(&quot;CreateThumbnail&quot;)]
+    public static void Run(
+        [BlobTrigger(&quot;images/{name}&quot;, Connection = &quot;image-blob-connection&quot;)]Stream image,
+        [Blob(&quot;images-sm/{name}&quot;, FileAccess.Write, Connection = &quot;image-blob-connection&quot;)]Stream imageSmall,
+        [Blob(&quot;images-md/{name}&quot;, FileAccess.Write, Connection = &quot;image-blob-connection&quot;)]Stream imageMedium) 
+    {
+        var imageBuilder = ImageBuilder.Current;
+        var size = imageDimensionsTable[ImageSize.Small];
+
+        imageBuilder.Build(
+            image, imageSmall,
+            new ResizeSettings(size.Item1, size.Item2, FitMode.Max, null), false);
+
+        image.Position = 0;
+        size = imageDimensionsTable[ImageSize.Medium];
+
+        imageBuilder.Build(
+            image, imageMedium,
+            new ResizeSettings(size.Item1, size.Item2, FitMode.Max, null), false);
+    }
+
+    public enum ImageSize
+    {
+        Small, Medium
+    }
+
+    private static Dictionary&lt;ImageSize, Tuple&lt;int, int&gt;&gt; imageDimensionsTable = new Dictionary&lt;ImageSize, Tuple&lt;int, int&gt;&gt;()
+    {
+        { ImageSize.Small,      Tuple.Create(268, 200) },
+        { ImageSize.Medium,     Tuple.Create(536, 400) }
+    };
+}
+</code></pre>
+
+<p>This function will be triggered once a new file is placed in the Azure Storage Container named <code>images</code> (<code>BlobTrigger</code>). It will then create two thumbnails that are saved to the containers named <code>images-sm</code> and <code>images-md</code>. <code>images-sm</code> will contain small sized thumbnails, while <code>images-md</code> will contain medium sized thumbnails.</p>
+
+<h1 id="save-metadata">Save metadata</h1>
+
+<p>Next we will save metadata of the file into Azure Table Storage. The code for this function will look like this.</p>
+
+<pre><code class="language-csharp">public static class SavePhoto
+{
+    [FunctionName(&quot;SavePhoto&quot;)]
+    public static async Task Run(
+        //This parameter is needed, to get the name of the blob.
+        [BlobTrigger(&quot;images/{name}&quot;, Connection = &quot;image-blob-connection&quot;)]Stream myBlob,
+        [Table(&quot;Photos&quot;, Connection = &quot;photo-table-connection&quot;)]IAsyncCollector&lt;Photo&gt; photos,
+        string name)
+    {
+        var photo = new Photo() { Name = name };
+        photo.RowKey = Guid.NewGuid().ToString();
+        photo.PartitionKey = photo.RowKey.Substring(0, 1);
+
+        await photos.AddAsync(photo);
+    }
+}
+</code></pre>
+
+<p>We again use the <code>BlogTrigger</code> to trigger the function and also use the <code>TableAttribute</code> to inject a Azure Table Storage table into an <code>IAsynCollector</code>. The <code>IAsynCollector</code> allows us to add new entries into the <code>Photos</code> table. For the moment we just store the filename. Each Azure Table Storage entry needs a <code>RowKey</code> and <code>PartitionKey</code>. For the <code>RowKey</code> we use a new guid, while for the <code>PartitionKey</code> we use the first character of the guid. There might be better partition keys, but for this example it is good enough.</p>
+
+<h1 id="query-the-table">Query the Table</h1>
+
+<p>Next we need a functions that queries and returns the photos from Azure Table Storage.</p>
+
+<pre><code class="language-csharp">public static class GetPhotos
+{
+    [FunctionName(&quot;GetPhotos&quot;)]
+    public static HttpResponseMessage Run(
+        [HttpTrigger(AuthorizationLevel.Anonymous, &quot;get&quot;)]HttpRequestMessage req,
+        [Table(&quot;Photos&quot;, Connection = &quot;photo-table-connection&quot;)]IQueryable&lt;Photo&gt; photos)
+    {
+        return req.CreateResponse(HttpStatusCode.OK, photos.ToList());
+    }
+}
+</code></pre>
+
+<p>This time we use a <code>HttpTrigger</code> to trigger the function when ever a http get request to <code>/api/getphotos</code> is made. We again use the <code>TableAttribute</code> to inject a Azure Table Storage table but this time we will not use <code>IAsyncCollector</code> but <code>IQueryable</code>. <code>IQuerable</code> allows us to query the <code>Photos</code> table. In this example we just return all entires of the table.</p>
+
+<p>We now have an API endpoint that we can query from our client application.</p>
+
+<h1 id="storage-container-access-policy">Storage Container Access Policy</h1>
+
+<p>By default containers are set to private (which is a good default setting!). To be able to retrieve the images via http we need to change the <a href="https://docs.microsoft.com/en-us/azure/storage/blobs/storage-manage-access-to-resources" target="_blank">Container Access Policy</a> to <code>Blob</code> instead of <code>Private</code>. You can change this via the Azure Portal or using the <a href="https://docs.microsoft.com/en-us/azure/vs-azure-tools-storage-manage-with-storage-explorer" target="_blank">Azure Storage Explorer</a></p>
+
+<h1 id="cors-settings">CORS Settings</h1>
+
+<p>In order to use the API endpoint from a browser, we need to configure CORS settings on our function app. In Azure Portal navigate to your function app, click on <code>Platform features</code> and then on <code>CORS</code>. Here you can add URLs that are allowed to use the API endpoint.</p>
+
+<p><img src="../../images/function-cors-settings.PNG" alt="CORS-Settings" /></p>
+
+<p>If you run it local within Visual Studio you need to add the following line to the Debug application arguments of the project <code>host start --cors *</code>.</p>
+
+<h1 id="the-client">The client</h1>
+
+<p>I have build a simple Angular application which queries the API endpoint and displays the thumbnails. A click on the thumbnail opens the original image. You can run the client and the functions app local, using <a href="https://cli.angular.io/" target="_blank">Angular CLI</a> for the client and Visual Studio and <a href="https://docs.microsoft.com/en-us/azure/storage/common/storage-use-emulator" target="_blank">Azure Storage Emulator</a> for the functions app.</p>
+
+<p><img src="../../images/photo-cloud.gif" alt="Client-Demo" /><a href="../../images/photo-cloud.gif">Original size</a></p>
+
+<h1 id="conclusion">Conclusion</h1>
+
+<p>As you can see it is very easy to create a simple web application with very few lines of code using Azure Functions. There is no need to include other SDKs or APIs, since the Azure Functions SDK comes with a attributes that integrated other Azure service very easy.</p>
+
+        </div>
+
+        
+        
+        <div class="article-toc" >
+            <h3>Contents</h3>
+            <nav id="TableOfContents">
+<ul>
+<li><a href="#creating-thumbnails">Creating thumbnails</a></li>
+<li><a href="#save-metadata">Save metadata</a></li>
+<li><a href="#query-the-table">Query the Table</a></li>
+<li><a href="#storage-container-access-policy">Storage Container Access Policy</a></li>
+<li><a href="#cors-settings">CORS Settings</a></li>
+<li><a href="#the-client">The client</a></li>
+<li><a href="#conclusion">Conclusion</a></li>
+</ul>
+</nav>
+        </div>
+        
+        
+
+        
+
+
+        
+        <footer class="article-footer">
+            <ul class="article-tag-list">
+                
+                <li class="article-tag-list-item">
+                    <a class="article-tag-list-link" href="../../tags/azure">Azure
+                    </a>
+                </li>
+                
+                <li class="article-tag-list-item">
+                    <a class="article-tag-list-link" href="../../tags/functions">Functions
+                    </a>
+                </li>
+                
+                <li class="article-tag-list-item">
+                    <a class="article-tag-list-link" href="../../tags/storage">Storage
+                    </a>
+                </li>
+                
+            </ul>
+        </footer>
+        
+    </div>
+</article>
+
+        
+    </section>
+    <footer id="footer">
+    <div class="outer">
+        <div id="footer-info" class="inner">
+            &copy; 2017 Boris Wilhelms // Coding Blog&nbsp;
+            Powered by <a href="https://gohugo.io" target="_blank">Hugo</a> with theme <a href="https://github.com/carsonip/hugo-theme-minos">Minos</a>
+        </div>
+    </div>
+    <script>
+window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+ga('create', 'UA-98632338-1', 'auto');
+ga('send', 'pageview');
+ga('set', 'anonymizeIp', true);
+</script>
+<script async src='//www.google-analytics.com/analytics.js'></script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.9.0/styles/tomorrow-night.min.css" integrity="sha256-2wL88NKUqvJi/ExflDzkzUumjUM73mcK2gBvBBeLvTk=" crossorigin="anonymous" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.9.0/highlight.min.js" integrity="sha256-KbfTjB0WZ8vvXngdpJGY3Yp3xKk+tttbqClO11anCIU=" crossorigin="anonymous"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+
+    
+    <script>
+        document.getElementById('main-nav-toggle').addEventListener('click', function () {
+            var header = document.getElementById('header');
+            if (header.classList.contains('mobile-on')) {
+                header.classList.remove('mobile-on');
+            } else {
+                header.classList.add('mobile-on');
+            }
+        });
+    </script>
+</footer>
+</div>
+</body>
+</html>

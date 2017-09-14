@@ -32,7 +32,7 @@
     <item>
       <title>Azure</title>
       <link>https://blog.wille-zone.de/tags/azure/</link>
-      <pubDate>Thu, 20 Jul 2017 17:05:31 +0200</pubDate>
+      <pubDate>Thu, 14 Sep 2017 17:40:37 +0200</pubDate>
       
       <guid>https://blog.wille-zone.de/tags/azure/</guid>
       <description></description>
@@ -50,9 +50,18 @@
     <item>
       <title>Functions</title>
       <link>https://blog.wille-zone.de/tags/functions/</link>
-      <pubDate>Thu, 20 Jul 2017 17:05:31 +0200</pubDate>
+      <pubDate>Thu, 14 Sep 2017 17:40:37 +0200</pubDate>
       
       <guid>https://blog.wille-zone.de/tags/functions/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Storage</title>
+      <link>https://blog.wille-zone.de/tags/storage/</link>
+      <pubDate>Thu, 14 Sep 2017 17:40:37 +0200</pubDate>
+      
+      <guid>https://blog.wille-zone.de/tags/storage/</guid>
       <description></description>
     </item>
     
