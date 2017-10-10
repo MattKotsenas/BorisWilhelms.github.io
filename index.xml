@@ -6,10 +6,20 @@
     <description>Recent content on Boris Wilhelms // Coding Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-US</language>
-    <lastBuildDate>Thu, 14 Sep 2017 17:40:37 +0200</lastBuildDate>
+    <lastBuildDate>Tue, 10 Oct 2017 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="https://blog.wille-zone.de/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Dependency injection in Azure Functions on function level</title>
+      <link>https://blog.wille-zone.de/post/azure-functions-dependency-injection/</link>
+      <pubDate>Tue, 10 Oct 2017 00:00:00 +0000</pubDate>
+      
+      <guid>https://blog.wille-zone.de/post/azure-functions-dependency-injection/</guid>
+      <description>Out of the box Azure Functions does not come with depdendency injection support you can use in your functions. There are quite a lot of ways to add dependency injection, but most of them rely on the Service Locator (anti-)pattern. In this post you will learn how to implement dependency injection on function level using the extensions API without the Service Locator (anti-)pattern.
+Goal The goal is to inject dependencies into our functions as a parameters.</description>
+    </item>
     
     <item>
       <title>Build a photo gallery with Azure Functions</title>

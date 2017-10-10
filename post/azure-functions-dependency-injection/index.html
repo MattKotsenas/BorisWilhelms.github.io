@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Dependency injection in Azure Functions on function level // Boris Wilhelms // Coding Blog</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta property="og:title" content="Dependency injection in Azure Functions on function level" />
+<meta property="og:description" content="How to implement dependency injection in Azure functions on function level" />
+<meta property="og:type" content="website" />
+<meta property="og:locale" content="en_US" />
+<meta property="og:url" content="https://blog.wille-zone.de/post/azure-functions-dependency-injection/" />
+
+
+    <link href="" rel="alternate" type="application/rss+xml" title="Boris Wilhelms // Coding Blog" />
+    <link rel="shortcut icon" href="../../favicon.png">
+
+    <link rel="stylesheet" href="../../css/main.css">
+
+    <link href="http://gmpg.org/xfn/11" rel="profile">
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+    <meta name="description" content="How to implement dependency injection in Azure functions on function level">
+    <meta name="keywords" content="Azure,Functions,">
+    <meta name="author" content="Boris Wilhelms">
+</head>
+
+<body>
+<div id="container">
+    <header id="header">
+    <div id="header-outer" class="outer">
+        <div id="header-inner" class="inner">
+            <a id="main-nav-toggle" class="nav-icon" href="javascript:;"></a>
+            <a id="logo" class="logo-text" href="../../">Boris Wilhelms // Coding Blog</a>
+            <nav id="main-nav">
+                
+                <a class="main-nav-link" href="../../about">About me</a>
+                
+            </nav>
+            <nav id="sub-nav">
+                <div id="search-form-wrap">
+                </div>
+            </nav>
+        </div>
+    </div>
+</header>
+    <section id="main" class="outer">
+        <article class="article article-type-post" itemscope itemprop="blogPost">
+    <div class="article-inner">
+        
+        <header class="article-header">
+            <h1 class="article-title" itemprop="name">Dependency injection in Azure Functions on function level</h1>
+        </header>
+        
+        <div class="article-meta">
+            <a href="../../post/azure-functions-dependency-injection/" class="article-date">
+                <time datetime='2017-10-10T00:00:00.000&#43;00:00' itemprop="datePublished">2017-10-10</time>
+            </a>
+            
+            
+            
+        </div>
+        <div class="article-entry" itemprop="articleBody">
+            
+
+<p>Out of the box Azure Functions does not come with depdendency injection support you can use in your functions. There are quite a lot of ways to add dependency injection, but most of them rely on the Service Locator (anti-)pattern. In this post you will learn how to implement dependency injection on function level using the extensions API without the Service Locator (anti-)pattern.</p>
+
+<h1 id="goal">Goal</h1>
+
+<p>The goal is to inject dependencies into our functions as a parameters.</p>
+
+<pre><code class="language-csharp">public static class GreeterFunction
+{
+    [FunctionName(&quot;Greeter&quot;)]
+    public static async Task&lt;HttpResponseMessage&gt; Run(
+        [HttpTrigger(AuthorizationLevel.Anonymous, &quot;get&quot;)]HttpRequestMessage req,
+        [Inject(typeof(IGreeter))]IGreeter greeter)
+    {
+        return req.CreateResponse(greeter.Greet());
+    }
+}
+</code></pre>
+
+<p>Here we want to get an implementation of <code>IGreeter</code> into our function.</p>
+
+<h1 id="inject-attribute">Inject attribute</h1>
+
+<p>First we need to create the <code>InjectAttribute</code> which is a binding attribute and receives the type we want to injection.</p>
+
+<pre><code class="language-csharp">[Binding]
+[AttributeUsage(AttributeTargets.Parameter, AllowMultiple = false)]
+public class InjectAttribute : Attribute
+{
+    public InjectAttribute(Type type)
+    {
+        Type = type;
+    }
+    public Type Type { get; }
+}
+</code></pre>
+
+<h1 id="extension-config-provider">Extension Config Provider</h1>
+
+<p>As the next and LAST step we need to create an extension config provider, which will be the heart of our dependency injection.
+The provider registeres the <code>InjectAttribute</code> and handles the resolving of the requested type.
+It is very important that we bind to <code>dynamic</code> otherwise we need to create a binding for each type we want to inject.
+The <code>Initialize</code> method will be called on startup, when the runtime discovers the functions.
+Here I use <code>Microsoft.Extensions.DependencyInjection</code> but you can use what ever library you like.</p>
+
+<pre><code class="language-csharp">public class InjectConfiguration : IExtensionConfigProvider
+{
+    private IServiceProvider _serviceProvider;
+
+    public void Initialize(ExtensionConfigContext context)
+    {
+        var services = new ServiceCollection();
+        RegisterServices(services);
+        _serviceProvider = services.BuildServiceProvider(true);
+
+        context
+            .AddBindingRule&lt;InjectAttribute&gt;()
+            .BindToInput&lt;dynamic&gt;(i =&gt; _serviceProvider.GetRequiredService(i.Type));
+    }
+    private void RegisterServices(IServiceCollection services)
+    {
+        services.AddSingleton&lt;IGreeter, Greeter&gt;();
+    }
+}
+</code></pre>
+
+<h1 id="conclusion">Conclusion</h1>
+
+<p>As you see, it is very easy to add dependency injection on function level using the extension API.
+Besides dependency injection the extension API allows you to create all sorts of input and output bindings!
+You can find the full example on <a href="https://github.com/BorisWilhelms/azure-function-dependency-injection" target="_blank">GitHub</a>.</p>
+
+        </div>
+
+        
+        
+        <div class="article-toc" >
+            <h3>Contents</h3>
+            <nav id="TableOfContents">
+<ul>
+<li><a href="#goal">Goal</a></li>
+<li><a href="#inject-attribute">Inject attribute</a></li>
+<li><a href="#extension-config-provider">Extension Config Provider</a></li>
+<li><a href="#conclusion">Conclusion</a></li>
+</ul>
+</nav>
+        </div>
+        
+        
+
+        
+
+
+        
+        <footer class="article-footer">
+            <ul class="article-tag-list">
+                
+                <li class="article-tag-list-item">
+                    <a class="article-tag-list-link" href="../../tags/azure">Azure
+                    </a>
+                </li>
+                
+                <li class="article-tag-list-item">
+                    <a class="article-tag-list-link" href="../../tags/functions">Functions
+                    </a>
+                </li>
+                
+            </ul>
+        </footer>
+        
+    </div>
+</article>
+
+        
+    </section>
+    <footer id="footer">
+    <div class="outer">
+        <div id="footer-info" class="inner">
+            &copy; 2017 Boris Wilhelms // Coding Blog&nbsp;
+            Powered by <a href="https://gohugo.io" target="_blank">Hugo</a> with theme <a href="https://github.com/carsonip/hugo-theme-minos">Minos</a>
+        </div>
+    </div>
+    <script>
+window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+ga('create', 'UA-98632338-1', 'auto');
+ga('send', 'pageview');
+ga('set', 'anonymizeIp', true);
+</script>
+<script async src='//www.google-analytics.com/analytics.js'></script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.9.0/styles/tomorrow-night.min.css" integrity="sha256-2wL88NKUqvJi/ExflDzkzUumjUM73mcK2gBvBBeLvTk=" crossorigin="anonymous" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.9.0/highlight.min.js" integrity="sha256-KbfTjB0WZ8vvXngdpJGY3Yp3xKk+tttbqClO11anCIU=" crossorigin="anonymous"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+
+    
+    <script>
+        document.getElementById('main-nav-toggle').addEventListener('click', function () {
+            var header = document.getElementById('header');
+            if (header.classList.contains('mobile-on')) {
+                header.classList.remove('mobile-on');
+            } else {
+                header.classList.add('mobile-on');
+            }
+        });
+    </script>
+</footer>
+</div>
+</body>
+</html>
