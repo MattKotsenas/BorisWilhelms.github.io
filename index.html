@@ -54,6 +54,53 @@
                 
                 
                 <header class="article-header">
+                    <h1 itemprop="name"><a class="article-title" href="./post/azure-functions-proper-dependency-injection/">Proper Dependency injection in Azure Functions on function level with scoped services!</a></h1>
+                </header>
+                
+                <div class="article-meta">
+                    <a href="./post/azure-functions-proper-dependency-injection/" class="article-date">
+                        <time datetime='2017-10-11T00:00:00.000&#43;00:00' itemprop="datePublished">2017-10-11</time>
+                    </a>
+                    
+                    
+                    
+                </div>
+                <div class="article-entry" itemprop="articleBody">
+                    <p>
+                        
+                    In my last post you learned how to implement dependency injection in Azure Functions on function level. While this works for services registered as transient or singleton, it does not work with services registered as scoped. In this post you will learn how we can implement proper dependency injection with scopes!
+Inject attribute We again start with the Inject attribute. Since we are going to change how to resolve bindings, the attribute can now be empty.
+                    </p>
+                    <p class="article-more-link">
+                        <a href="./post/azure-functions-proper-dependency-injection/">Read More</a>
+                    </p>
+                </div>
+
+                
+                <footer class="article-footer">
+                    <ul class="article-tag-list">
+                        
+                        <li class="article-tag-list-item">
+                            <a class="article-tag-list-link" href="./tags/azure">Azure
+                            </a>
+                        </li>
+                        
+                        <li class="article-tag-list-item">
+                            <a class="article-tag-list-link" href="./tags/functions">Functions
+                            </a>
+                        </li>
+                        
+                    </ul>
+                </footer>
+                
+            </div>
+        </article>
+        
+        <article class="article article-type-post" itemscope itemprop="blogPost">
+            <div class="article-inner">
+                
+                
+                <header class="article-header">
                     <h1 itemprop="name"><a class="article-title" href="./post/azure-functions-dependency-injection/">Dependency injection in Azure Functions on function level</a></h1>
                 </header>
                 
@@ -68,8 +115,8 @@
                 <div class="article-entry" itemprop="articleBody">
                     <p>
                         
-                    Out of the box Azure Functions does not come with depdendency injection support you can use in your functions. There are quite a lot of ways to add dependency injection, but most of them rely on the Service Locator (anti-)pattern. In this post you will learn how to implement dependency injection on function level using the extensions API without the Service Locator (anti-)pattern.
-Goal The goal is to inject dependencies into our functions as a parameters.
+                    This solution only supports transient and singleton scoped services. Please see my follow up post where you learn how to implement proper dependency injection with support for scoped services.
+Out of the box Azure Functions does not come with dependency injection support you can use in your functions. There are quite a lot of ways to add dependency injection, but most of them rely on the Service Locator (anti-)pattern. In this post you will learn how to implement dependency injection on function level using the extensions API without the Service Locator (anti-)pattern.
                     </p>
                     <p class="article-more-link">
                         <a href="./post/azure-functions-dependency-injection/">Read More</a>
@@ -303,10 +350,12 @@ While this is usually not a problem, it might break functionality in some cases.
         </div>
     </div>
     <script>
-window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
-ga('create', 'UA-98632338-1', 'auto');
-ga('send', 'pageview');
-ga('set', 'anonymizeIp', true);
+    if (window.location.hostname !== "localhost") {
+        window.ga = window.ga || function () { (ga.q = ga.q || []).push(arguments) }; ga.l = +new Date;
+        ga('create', 'UA-98632338-1', 'auto');
+        ga('send', 'pageview');
+        ga('set', 'anonymizeIp', true);
+    }
 </script>
 <script async src='//www.google-analytics.com/analytics.js'></script>
 

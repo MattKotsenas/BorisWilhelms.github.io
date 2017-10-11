@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Proper Dependency injection in Azure Functions on function level with scoped services! // Boris Wilhelms // Coding Blog</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta property="og:title" content="Proper Dependency injection in Azure Functions on function level with scoped services!" />
+<meta property="og:description" content="How to implement proper dependency injection in Azure functions on function level with scoped services!" />
+<meta property="og:type" content="website" />
+<meta property="og:locale" content="en_US" />
+<meta property="og:url" content="https://blog.wille-zone.de/post/azure-functions-proper-dependency-injection/" />
+
+
+    <link href="" rel="alternate" type="application/rss+xml" title="Boris Wilhelms // Coding Blog" />
+    <link rel="shortcut icon" href="../../favicon.png">
+
+    <link rel="stylesheet" href="../../css/main.css">
+
+    <link href="http://gmpg.org/xfn/11" rel="profile">
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+    <meta name="description" content="How to implement proper dependency injection in Azure functions on function level with scoped services!">
+    <meta name="keywords" content="Azure,Functions,">
+    <meta name="author" content="Boris Wilhelms">
+</head>
+
+<body>
+<div id="container">
+    <header id="header">
+    <div id="header-outer" class="outer">
+        <div id="header-inner" class="inner">
+            <a id="main-nav-toggle" class="nav-icon" href="javascript:;"></a>
+            <a id="logo" class="logo-text" href="../../">Boris Wilhelms // Coding Blog</a>
+            <nav id="main-nav">
+                
+                <a class="main-nav-link" href="../../about">About me</a>
+                
+            </nav>
+            <nav id="sub-nav">
+                <div id="search-form-wrap">
+                </div>
+            </nav>
+        </div>
+    </div>
+</header>
+    <section id="main" class="outer">
+        <article class="article article-type-post" itemscope itemprop="blogPost">
+    <div class="article-inner">
+        
+        <header class="article-header">
+            <h1 class="article-title" itemprop="name">Proper Dependency injection in Azure Functions on function level with scoped services!</h1>
+        </header>
+        
+        <div class="article-meta">
+            <a href="../../post/azure-functions-proper-dependency-injection/" class="article-date">
+                <time datetime='2017-10-11T00:00:00.000&#43;00:00' itemprop="datePublished">2017-10-11</time>
+            </a>
+            
+            
+            
+        </div>
+        <div class="article-entry" itemprop="articleBody">
+            
+
+<p>In my <a href="../../post/azure-functions-dependency-injection/">last post</a> you learned how to implement dependency injection in Azure Functions on function level. While this works for services registered as transient or singleton, it does not work with services registered as scoped. In this post you will learn how we can implement proper dependency injection with scopes!</p>
+
+<h1 id="inject-attribute">Inject attribute</h1>
+
+<p>We again start with the Inject attribute. Since we are going to change how to resolve bindings, the attribute can now be empty.</p>
+
+<pre><code class="language-csharp">[Binding]
+[AttributeUsage(AttributeTargets.Parameter, AllowMultiple = false)]
+public class InjectAttribute : Attribute
+{
+}
+</code></pre>
+
+<h1 id="binding-provider">Binding provider</h1>
+
+<p>The binding provider is used to create bindings. The method <code>TryCreateAsync</code> will be called for each instance of the <code>InjectAttribute</code>.
+There we get additional informations, e.g. the parameter on which the attribute is used. Our binding provider also receives the <code>IServiceProvider</code> instance which will be passed to the binding.</p>
+
+<pre><code class="language-csharp">public class InjectBindingProvider : IBindingProvider
+{
+    private readonly IServiceProvider _serviceProvider;
+
+    public InjectBindingProvider(IServiceProvider serviceProvider) =&gt;
+        _serviceProvider = serviceProvider;
+
+    public Task&lt;IBinding&gt; TryCreateAsync(BindingProviderContext context)
+    {
+        IBinding binding = new InjectBinding(_serviceProvider, context.Parameter.ParameterType);
+        return Task.FromResult(binding);
+    }
+}
+</code></pre>
+
+<h1 id="inject-binding">Inject binding</h1>
+
+<p>The binding class holds the information of the binding. In this case we pass the <code>IServiceProvider</code> instance and <code>Type</code> the attribute is bound to. The method <code>BindAsync</code> will be called, when ever a binding is resolved which happens when a function will be executed. We resolve the service from the <code>IServiceProvider</code> and pass it to a <code>IValueProvider</code>.</p>
+
+<p>The <code>InjectValueProvider</code> holds the value (the instance of the requested service).</p>
+
+<pre><code class="language-csharp">public class InjectBinding : IBinding
+{
+    private readonly Type _type;
+    private readonly IServiceProvider _serviceProvider;
+
+    public InjectBinding(IServiceProvider serviceProvider, Type type)
+    {
+        _type = type;
+        _serviceProvider = serviceProvider;
+    }
+
+    public bool FromAttribute =&gt; true;
+
+    public Task&lt;IValueProvider&gt; BindAsync(object value, ValueBindingContext context) =&gt;
+        Task.FromResult((IValueProvider)new InjectValueProvider(value));
+
+    public async Task&lt;IValueProvider&gt; BindAsync(BindingContext context)
+    {
+        await Task.Yield();
+        var value = _serviceProvider.GetRequiredService(_type);
+        return await BindAsync(value, context.ValueContext);
+    }
+
+    public ParameterDescriptor ToParameterDescriptor() =&gt; new ParameterDescriptor();
+
+    private class InjectValueProvider : IValueProvider
+    {
+        private readonly object _value;
+
+        public InjectValueProvider(object value) =&gt; _value = value;
+
+        public Type Type =&gt; _value.GetType();
+
+        public Task&lt;object&gt; GetValueAsync() =&gt; Task.FromResult(_value);
+
+        public string ToInvokeString() =&gt; _value.ToString();
+    }
+}
+</code></pre>
+
+<h1 id="register-attribute-and-the-binding-provider">Register attribute and the binding provider</h1>
+
+<p>Now we glue everything together and register the attribute and binding provider. We again use a <code>IExtensionConfigProvider</code> implementation for this.</p>
+
+<pre><code class="language-csharp">public class InjectConfiguration : IExtensionConfigProvider
+{
+    public void Initialize(ExtensionConfigContext context)
+    {
+        var services = new ServiceCollection();
+        RegisterServices(services);
+        var serviceProvider = services.BuildServiceProvider(true);
+
+        context
+            .AddBindingRule&lt;InjectAttribute&gt;()
+            .Bind(new InjectBindingProvider(serviceProvider));
+    }
+    private void RegisterServices(IServiceCollection services)
+    {
+        services.AddSingleton&lt;IGreeter, Greeter&gt;();
+    }
+}
+</code></pre>
+
+<p>We now have more a less the same state as in the <a href="../../post/azure-functions-dependency-injection/">last post</a> except, that the attribute got simplified. But this implementation still works only with transient and singleton scoped services.</p>
+
+<pre><code>[FunctionName(&quot;Greeter&quot;)]
+public static async Task&lt;HttpResponseMessage&gt; Run(
+    [HttpTrigger(AuthorizationLevel.Anonymous, &quot;get&quot;)]HttpRequestMessage req,
+    [Inject]IGreeter greeter)
+{
+    return req.CreateResponse(greeter.Greet());
+}
+</code></pre>
+
+<h1 id="adding-support-for-scoped-services">Adding support for scoped services</h1>
+
+<p>In order to support scoped services we need to change some of the methods. First we need to create and store an <code>IServiceScope</code> instance for each function invocation, so that we can share the same scope for the same function invocation. Luckily each function invocation gets a unique id, which will be passed our <code>InjectBinding</code>. First we add a <code>ConcurrentDictionary</code> to the <code>InjectBindingProvider</code> to store the scopes.</p>
+
+<pre><code>public class InjectBindingProvider : IBindingProvider
+{
+    public static readonly ConcurrentDictionary&lt;Guid, IServiceScope&gt; Scopes =
+        new ConcurrentDictionary&lt;Guid, IServiceScope&gt;();
+    
+    ...
+}
+</code></pre>
+
+<p>Now we change the <code>BindAsync</code> method in the <code>InjectBinding</code>. The <code>BindingContext</code> contains the FunctionInstanceId which is the unique id, created for each function invocation. So for each invocation we create a new scope and store the scope in the <code>ConcurrentDictionary</code>. We then resolve the service from the scope.</p>
+
+<pre><code>public async Task&lt;IValueProvider&gt; BindAsync(BindingContext context)
+{
+    await Task.Yield();
+
+    var scope = InjectBindingProvider.Scopes.GetOrAdd(context.FunctionInstanceId, (_) =&gt; _serviceProvider.CreateScope());
+    var value = scope.ServiceProvider.GetRequiredService(_type);
+
+    return await BindAsync(value, context.ValueContext);
+}
+</code></pre>
+
+<p>At this point we are already able to resolve scoped services, BUT we do not clean up and destroy the scope, so all resolved service will life forever. In order to cleanup the scopes, we implement an <code>IFunctionInvocationFilter</code> and <code>IFunctionExceptionFilter</code> which are called whenever a function execution ended or when an exception within the function occurred.</p>
+
+<pre><code>public class ScopeCleanupFilter : IFunctionInvocationFilter, IFunctionExceptionFilter
+{
+    public Task OnExceptionAsync(FunctionExceptionContext exceptionContext, CancellationToken cancellationToken)
+    {
+        RemoveScope(exceptionContext.FunctionInstanceId);
+        return Task.CompletedTask;
+    }
+
+    public Task OnExecutedAsync(FunctionExecutedContext executedContext, CancellationToken cancellationToken)
+    {
+        RemoveScope(executedContext.FunctionInstanceId);
+        return Task.CompletedTask;
+    }
+
+    public Task OnExecutingAsync(FunctionExecutingContext executingContext, CancellationToken cancellationToken) =&gt;
+        Task.CompletedTask;
+
+    private void RemoveScope(Guid id)
+    {
+        if (InjectBindingProvider.Scopes.TryRemove(id, out var scope))
+        {
+            scope.Dispose();
+        }
+    }
+}
+</code></pre>
+
+<p>As the last step we need to register the filter. Therefor we change the <code>Initialize</code> method of our <code>InjectConfiguration</code>.</p>
+
+<pre><code>public void Initialize(ExtensionConfigContext context)
+{
+    ...
+
+    var registry = context.Config.GetService&lt;IExtensionRegistry&gt;();
+    var filter = new ScopeCleanupFilter();
+    registry.RegisterExtension(typeof(IFunctionInvocationFilter), filter);
+    registry.RegisterExtension(typeof(IFunctionExceptionFilter), filter);
+}
+</code></pre>
+
+<h1 id="conclusion">Conclusion</h1>
+
+<p>Although Azure Functions does not come with dependency injection for you functions, it can be added quite easy. It is still a &ldquo;hacky&rdquo; solution, but it works :-)
+You can find the full example on <a href="https://github.com/BorisWilhelms/azure-function-dependency-injection" target="_blank">GitHub</a>.</p>
+
+        </div>
+
+        
+        
+        <div class="article-toc" >
+            <h3>Contents</h3>
+            <nav id="TableOfContents">
+<ul>
+<li><a href="#inject-attribute">Inject attribute</a></li>
+<li><a href="#binding-provider">Binding provider</a></li>
+<li><a href="#inject-binding">Inject binding</a></li>
+<li><a href="#register-attribute-and-the-binding-provider">Register attribute and the binding provider</a></li>
+<li><a href="#adding-support-for-scoped-services">Adding support for scoped services</a></li>
+<li><a href="#conclusion">Conclusion</a></li>
+</ul>
+</nav>
+        </div>
+        
+        
+
+        
+
+
+        
+        <footer class="article-footer">
+            <ul class="article-tag-list">
+                
+                <li class="article-tag-list-item">
+                    <a class="article-tag-list-link" href="../../tags/azure">Azure
+                    </a>
+                </li>
+                
+                <li class="article-tag-list-item">
+                    <a class="article-tag-list-link" href="../../tags/functions">Functions
+                    </a>
+                </li>
+                
+            </ul>
+        </footer>
+        
+    </div>
+</article>
+
+        
+    </section>
+    <footer id="footer">
+    <div class="outer">
+        <div id="footer-info" class="inner">
+            &copy; 2017 Boris Wilhelms // Coding Blog&nbsp;
+            Powered by <a href="https://gohugo.io" target="_blank">Hugo</a> with theme <a href="https://github.com/carsonip/hugo-theme-minos">Minos</a>
+        </div>
+    </div>
+    <script>
+    if (window.location.hostname !== "localhost") {
+        window.ga = window.ga || function () { (ga.q = ga.q || []).push(arguments) }; ga.l = +new Date;
+        ga('create', 'UA-98632338-1', 'auto');
+        ga('send', 'pageview');
+        ga('set', 'anonymizeIp', true);
+    }
+</script>
+<script async src='//www.google-analytics.com/analytics.js'></script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.9.0/styles/tomorrow-night.min.css" integrity="sha256-2wL88NKUqvJi/ExflDzkzUumjUM73mcK2gBvBBeLvTk=" crossorigin="anonymous" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.9.0/highlight.min.js" integrity="sha256-KbfTjB0WZ8vvXngdpJGY3Yp3xKk+tttbqClO11anCIU=" crossorigin="anonymous"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+
+    
+    <script>
+        document.getElementById('main-nav-toggle').addEventListener('click', function () {
+            var header = document.getElementById('header');
+            if (header.classList.contains('mobile-on')) {
+                header.classList.remove('mobile-on');
+            } else {
+                header.classList.add('mobile-on');
+            }
+        });
+    </script>
+</footer>
+</div>
+</body>
+</html>

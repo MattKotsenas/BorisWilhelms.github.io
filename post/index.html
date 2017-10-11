@@ -56,6 +56,19 @@
                     <article class="archive-article archive-type-post">
     <div class="archive-article-inner">
         <header class="archive-article-header">
+            <a href="../post/azure-functions-proper-dependency-injection/" class="archive-article-date">
+                <time datetime='2017-10-11T00:00:00.000&#43;00:00' itemprop="datePublished">2017 Oct 11</time>
+            </a>
+            <h1 itemprop="name">
+                <a class="archive-article-title" href="../post/azure-functions-proper-dependency-injection/">Proper Dependency injection in Azure Functions on function level with scoped services!</a>
+            </h1>
+        </header>
+    </div>
+</article>
+                
+                    <article class="archive-article archive-type-post">
+    <div class="archive-article-inner">
+        <header class="archive-article-header">
             <a href="../post/azure-functions-dependency-injection/" class="archive-article-date">
                 <time datetime='2017-10-10T00:00:00.000&#43;00:00' itemprop="datePublished">2017 Oct 10</time>
             </a>
@@ -130,10 +143,12 @@
         </div>
     </div>
     <script>
-window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
-ga('create', 'UA-98632338-1', 'auto');
-ga('send', 'pageview');
-ga('set', 'anonymizeIp', true);
+    if (window.location.hostname !== "localhost") {
+        window.ga = window.ga || function () { (ga.q = ga.q || []).push(arguments) }; ga.l = +new Date;
+        ga('create', 'UA-98632338-1', 'auto');
+        ga('send', 'pageview');
+        ga('set', 'anonymizeIp', true);
+    }
 </script>
 <script async src='//www.google-analytics.com/analytics.js'></script>
 
