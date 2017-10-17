@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Secure Azure Functions with jwt token // Boris Wilhelms // Coding Blog</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta property="og:title" content="Secure Azure Functions with jwt token" />
+<meta property="og:description" content="How to secure your Azure Function with a jwt token." />
+<meta property="og:type" content="website" />
+<meta property="og:locale" content="en_US" />
+<meta property="og:url" content="https://blog.wille-zone.de/archive/secure-azure-functions-with-jwt-token/" />
+
+
+    <link href="" rel="alternate" type="application/rss+xml" title="Boris Wilhelms // Coding Blog" />
+    <link rel="shortcut icon" href="../../favicon.png">
+
+    <link rel="stylesheet" href="../../css/main.css">
+
+    <link href="http://gmpg.org/xfn/11" rel="profile">
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+    <meta name="description" content="How to secure your Azure Function with a jwt token.">
+    <meta name="keywords" content="Azure,Functions,jwt,">
+    <meta name="author" content="Boris Wilhelms">
+</head>
+
+<body>
+<div id="container">
+    <header id="header">
+    <div id="header-outer" class="outer">
+        <div id="header-inner" class="inner">
+            <a id="main-nav-toggle" class="nav-icon" href="javascript:;"></a>
+            <a id="logo" class="logo-text" href="../../">Boris Wilhelms // Coding Blog</a>
+            <nav id="main-nav">
+                
+                <a class="main-nav-link" href="../../about">About me</a>
+                
+            </nav>
+            <nav id="sub-nav">
+                <div id="search-form-wrap">
+                </div>
+            </nav>
+        </div>
+    </div>
+</header>
+    <section id="main" class="outer">
+        <article class="article article-type-post" itemscope itemprop="blogPost">
+    <div class="article-inner">
+        
+        <header class="article-header">
+            <h1 class="article-title" itemprop="name">Secure Azure Functions with jwt token</h1>
+        </header>
+        
+        <div class="article-meta">
+            <a href="../../archive/secure-azure-functions-with-jwt-token/" class="article-date">
+                <time datetime='2017-07-20T17:05:31.000&#43;02:00' itemprop="datePublished">2017-07-20</time>
+            </a>
+            
+            
+            
+        </div>
+        <div class="article-entry" itemprop="articleBody">
+            <p><strong><em>Please take a look at the updated post <a href="../../post/secure-azure-functions-with-jwt-token">here</a>. DO NOT USE THE CODE FROM THIS POST, WITHOUT ADDITION VALIDATION.</em></strong></p>
+
+<p>Out of the box it is only possible to secure your Azure Functions via Function Keys (API-Keys), which sometimes might not fit into your requirements. When using HttpTrigger we luckily have access to the current request and are therefor able to implement our own custom authentication/authorization methods. You could for example use jwt tokens to control authentication/authorization.</p>
+
+<p>Here is an example code on how to validate jwt tokens and controlling access to your Azure Function.</p>
+
+<p><strong>CAUTION: You should not use this code in production. This is just a proof of concept and lacks a lot of validation!</strong></p>
+
+<pre><code class="language-csharp">using System;
+using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Security.Claims;
+using System.Threading.Tasks;
+using Microsoft.Azure.WebJobs;
+using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.Azure.WebJobs.Host;
+
+namespace FunctionTokenTest
+{
+    public static class TokenTest1
+    {
+        [FunctionName(&quot;TokenTest&quot;)]
+        public static async Task&lt;HttpResponseMessage&gt; Run([HttpTrigger(AuthorizationLevel.Anonymous, &quot;get&quot;, Route = null)]HttpRequestMessage req, TraceWriter log)
+        {
+            if (!req.Headers.Contains(&quot;Authorization&quot;))
+            {
+                return new HttpResponseMessage(HttpStatusCode.Forbidden);
+            }
+
+            var headerValue = req.Headers.GetValues(&quot;Authorization&quot;);
+            var bearerValue = headerValue.FirstOrDefault(v =&gt; v.StartsWith(&quot;Bearer &quot;)) ?? String.Empty;
+            if (String.IsNullOrWhiteSpace(bearerValue))
+            {
+                return new HttpResponseMessage(HttpStatusCode.Forbidden);
+
+            }
+            var bearerToken = bearerValue.Split(' ')[1];
+
+            var principal = ValidateToken(bearerToken, &quot;MYISSUER&quot;, &quot;MYSCOPE&quot;);
+            if (principal == null)
+            {
+                return new HttpResponseMessage(HttpStatusCode.Forbidden);
+            }
+
+            return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent($&quot;Hello {principal.Identity.Name}&quot;) };
+        }
+
+        private static ClaimsPrincipal ValidateToken(string jwtToken, string issuer, string requiredScope)
+        {
+            var handler = new JwtSecurityTokenHandler();
+            if (!handler.CanReadToken(jwtToken))
+            {
+                return null;
+            }
+
+            handler.InboundClaimTypeMap.Clear();
+
+            Microsoft.IdentityModel.Tokens.SecurityToken token;
+            var principal = handler.ValidateToken(jwtToken, new Microsoft.IdentityModel.Tokens.TokenValidationParameters()
+            {
+                ValidateAudience = false,
+                ValidIssuer = issuer,
+                ValidateIssuerSigningKey = false,
+                SignatureValidator = (t, param) =&gt; new JwtSecurityToken(t),
+                NameClaimType = &quot;sub&quot;
+
+            }, out token);
+
+            if (!principal.Claims.Any(c =&gt; c.Type == &quot;scope&quot; &amp;&amp; c.Value == requiredScope))
+            {
+                return null;
+            }
+
+            return principal;
+        }
+    }
+}
+</code></pre>
+
+<p>You can find a runnable example at <a href="https://github.com/BorisWilhelms/FunctionTokenTest" target="_blank">https://github.com/BorisWilhelms/FunctionTokenTest</a></p>
+
+        </div>
+
+        
+        
+        
+
+        
+
+
+        
+        <footer class="article-footer">
+            <ul class="article-tag-list">
+                
+                <li class="article-tag-list-item">
+                    <a class="article-tag-list-link" href="../../tags/azure">Azure
+                    </a>
+                </li>
+                
+                <li class="article-tag-list-item">
+                    <a class="article-tag-list-link" href="../../tags/functions">Functions
+                    </a>
+                </li>
+                
+            </ul>
+        </footer>
+        
+    </div>
+</article>
+
+        
+    </section>
+    <footer id="footer">
+    <div class="outer">
+        <div id="footer-info" class="inner">
+            &copy; 2017 Boris Wilhelms // Coding Blog&nbsp;
+            Powered by <a href="https://gohugo.io" target="_blank">Hugo</a> with theme <a href="https://github.com/carsonip/hugo-theme-minos">Minos</a>
+        </div>
+    </div>
+    <script>
+    if (window.location.hostname !== "localhost") {
+        window.ga = window.ga || function () { (ga.q = ga.q || []).push(arguments) }; ga.l = +new Date;
+        ga('create', 'UA-98632338-1', 'auto');
+        ga('send', 'pageview');
+        ga('set', 'anonymizeIp', true);
+    }
+</script>
+<script async src='//www.google-analytics.com/analytics.js'></script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.9.0/styles/tomorrow-night.min.css" integrity="sha256-2wL88NKUqvJi/ExflDzkzUumjUM73mcK2gBvBBeLvTk=" crossorigin="anonymous" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.9.0/highlight.min.js" integrity="sha256-KbfTjB0WZ8vvXngdpJGY3Yp3xKk+tttbqClO11anCIU=" crossorigin="anonymous"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+
+    
+    <script>
+        document.getElementById('main-nav-toggle').addEventListener('click', function () {
+            var header = document.getElementById('header');
+            if (header.classList.contains('mobile-on')) {
+                header.classList.remove('mobile-on');
+            } else {
+                header.classList.add('mobile-on');
+            }
+        });
+    </script>
+</footer>
+</div>
+</body>
+</html>

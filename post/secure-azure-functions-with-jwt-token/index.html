@@ -2,10 +2,10 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Secure Azure Functions with jwt token // Boris Wilhelms // Coding Blog</title>
+    <title>Secure Azure Functions with JWT token // Boris Wilhelms // Coding Blog</title>
 
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-    <meta property="og:title" content="Secure Azure Functions with jwt token" />
+    <meta property="og:title" content="Secure Azure Functions with JWT token" />
 <meta property="og:description" content="How to secure your Azure Function with a jwt token." />
 <meta property="og:type" content="website" />
 <meta property="og:locale" content="en_US" />
@@ -52,98 +52,139 @@
     <div class="article-inner">
         
         <header class="article-header">
-            <h1 class="article-title" itemprop="name">Secure Azure Functions with jwt token</h1>
+            <h1 class="article-title" itemprop="name">Secure Azure Functions with JWT token</h1>
         </header>
         
         <div class="article-meta">
             <a href="../../post/secure-azure-functions-with-jwt-token/" class="article-date">
-                <time datetime='2017-07-20T17:05:31.000&#43;02:00' itemprop="datePublished">2017-07-20</time>
+                <time datetime='2017-10-17T00:00:00.000&#43;00:00' itemprop="datePublished">2017-10-17</time>
             </a>
             
             
             
         </div>
         <div class="article-entry" itemprop="articleBody">
-            <p>Out of the box it is only possible to secure your Azure Functions via Function Keys (API-Keys), which sometimes might not fit into your requirements. When using HttpTrigger we luckily have access to the current request and are therefor able to implement our own custom authentication/authorization methods. You could for example use jwt tokens to control authentication/authorization.</p>
+            <p><strong><em>I have completely rewritten this post. You can find the original post <a href="../../archive/secure-azure-functions-with-jwt-token">here</a>.</em></strong></p>
 
-<p>Here is an example code on how to validate jwt tokens and controling access to your Azure Function.</p>
+<p>Out of the box it is only possible to secure your Azure Functions via Function Keys (API-Keys), which sometimes might not fit into your requirements. When using HttpTrigger we luckily have access to the current request and are therefor able to implement our own custom authentication/authorization methods. You could for example use JWT tokens issued by an OpenID provider to control authentication/authorization.</p>
 
-<p><strong>CAUTION: You should not use this code in production. This is just a proof of concept and lacks a lot of validation!</strong></p>
+<p>In this post you learn how to validate OpenID JWT tokens and controlling access to your Azure Function.</p>
 
-<pre><code class="language-csharp">using System;
-using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Security.Claims;
-using System.Threading.Tasks;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
-using Microsoft.Azure.WebJobs.Host;
+<p>First lets see the function.</p>
 
-namespace FunctionTokenTest
+<pre><code class="language-csharp">public static class HelloWorldFunction
 {
-    public static class TokenTest1
+    [FunctionName(&quot;HelloWorld&quot;)]
+    public static async Task&lt;HttpResponseMessage&gt; Run(
+        [HttpTrigger(AuthorizationLevel.Anonymous, &quot;get&quot;, Route = null)]HttpRequestMessage req)
     {
-        [FunctionName(&quot;TokenTest&quot;)]
-        public static async Task&lt;HttpResponseMessage&gt; Run([HttpTrigger(AuthorizationLevel.Anonymous, &quot;get&quot;, Route = null)]HttpRequestMessage req, TraceWriter log)
+        // Authentication boilerplate code start
+        ClaimsPrincipal principal;
+        if ((principal = await Security.ValidateTokenAsync(req.Headers.Authorization)) == null)
         {
-            if (!req.Headers.Contains(&quot;Authorization&quot;))
-            {
-                return new HttpResponseMessage(HttpStatusCode.Forbidden);
-            }
+            return req.CreateResponse(HttpStatusCode.Unauthorized);
+        }
+        // Authentication boilerplate code end
 
-            var headerValue = req.Headers.GetValues(&quot;Authorization&quot;);
-            var bearerValue = headerValue.FirstOrDefault(v =&gt; v.StartsWith(&quot;Bearer &quot;)) ?? String.Empty;
-            if (String.IsNullOrWhiteSpace(bearerValue))
-            {
-                return new HttpResponseMessage(HttpStatusCode.Forbidden);
+        return req.CreateResponse(HttpStatusCode.OK, &quot;Hello &quot; + principal.Identity.Name);
+    }
+}
+</code></pre>
 
-            }
-            var bearerToken = bearerValue.Split(' ')[1];
+<p>It is very important that you set the authorization level to anonymous, since we want to skip all checks done by Azure Functions. Then we need to add the &ldquo;authentication boilerplate code&rdquo; to every function, we want to protect with OpenID JWT tokens. Unfortunately there is currently no generic way to add this, e.g. via attributes.</p>
 
-            var principal = ValidateToken(bearerToken, &quot;MYISSUER&quot;, &quot;MYSCOPE&quot;);
-            if (principal == null)
-            {
-                return new HttpResponseMessage(HttpStatusCode.Forbidden);
-            }
+<p>Now we need to implement the validation method.</p>
 
-            return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent($&quot;Hello {principal.Identity.Name}&quot;) };
+<pre><code class="language-csharp">using Microsoft.IdentityModel.Protocols;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
+using Microsoft.IdentityModel.Tokens;
+using System;
+using System.IdentityModel.Tokens.Jwt;
+using System.Net.Http.Headers;
+using System.Security.Claims;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace FunctionApp5
+{
+    public static class Security
+    {
+        private static readonly IConfigurationManager&lt;OpenIdConnectConfiguration&gt; _configurationManager;
+
+        static Security()
+        {
+            var issuer = Environment.GetEnvironmentVariable(&quot;ISSUER&quot;);
+
+            var documentRetriever = new HttpDocumentRetriever();
+            documentRetriever.RequireHttps = issuer.StartsWith(&quot;https://&quot;);
+
+            _configurationManager = new ConfigurationManager&lt;OpenIdConnectConfiguration&gt;(
+                $&quot;{issuer}/.well-known/openid-configuration&quot;,
+                new OpenIdConnectConfigurationRetriever(),
+                documentRetriever
+            );
         }
 
-        private static ClaimsPrincipal ValidateToken(string jwtToken, string issuer, string requiredScope)
+        public static async Task&lt;ClaimsPrincipal&gt; ValidateTokenAsync(AuthenticationHeaderValue value)
         {
-            var handler = new JwtSecurityTokenHandler();
-            if (!handler.CanReadToken(jwtToken))
+            if (value?.Scheme != &quot;Bearer&quot;)
             {
                 return null;
             }
 
-            handler.InboundClaimTypeMap.Clear();
+            var config = await _configurationManager.GetConfigurationAsync(CancellationToken.None);
+            var issuer = Environment.GetEnvironmentVariable(&quot;ISSUER&quot;);
+            var audience = Environment.GetEnvironmentVariable(&quot;AUDIENCE&quot;);
 
-            Microsoft.IdentityModel.Tokens.SecurityToken token;
-            var principal = handler.ValidateToken(jwtToken, new Microsoft.IdentityModel.Tokens.TokenValidationParameters()
+            var validationParameter = new TokenValidationParameters()
             {
-                ValidateAudience = false,
+                RequireSignedTokens = true,
+                ValidAudience = audience,
+                ValidateAudience = true,
                 ValidIssuer = issuer,
-                ValidateIssuerSigningKey = false,
-                SignatureValidator = (t, param) =&gt; new JwtSecurityToken(t),
-                NameClaimType = &quot;sub&quot;
+                ValidateIssuer = true,
+                ValidateIssuerSigningKey = true,
+                ValidateLifetime = true,
+                IssuerSigningKeys = config.SigningKeys
+            };
 
-            }, out token);
+            ClaimsPrincipal result = null;
+            var tries = 0;
 
-            if (!principal.Claims.Any(c =&gt; c.Type == &quot;scope&quot; &amp;&amp; c.Value == requiredScope))
+            while (result == null &amp;&amp; tries &lt;= 1)
             {
-                return null;
+                try
+                {
+                    var handler = new JwtSecurityTokenHandler();
+                    result = handler.ValidateToken(value.Parameter, validationParameter, out var token);
+                }
+                catch (SecurityTokenSignatureKeyNotFoundException)
+                {
+                    // This exception is thrown if the signature key of the JWT could not be found.
+                    // This could be the case when the issuer changed its signing keys, so we trigger a 
+                    // refresh and retry validation.
+                    _configurationManager.RequestRefresh();
+                    tries++;
+                }
+                catch (SecurityTokenException)
+                {
+                    return null;
+                }
             }
 
-            return principal;
+            return result;
         }
     }
 }
 </code></pre>
 
-<p>You can find a runnable example at <a href="https://github.com/BorisWilhelms/FunctionTokenTest" target="_blank">https://github.com/BorisWilhelms/FunctionTokenTest</a></p>
+<p>Here we use a <code>ConfigurationManager</code> in order to retrieve the signing keys from the OpenID provider. It is very important to have the <code>ConfigurationManager</code> as a static, since it is caching the configuration in order to reduce HTTP requests to the OpenID provider. The <code>ConfigurationManager</code> refreshes the configuration after configurable timeouts. Next in the <code>ValidateTokenAsync</code> method we setup TokenValidationParameter. Here we want to enable as much validation as possible.</p>
+
+<p>Once we configured the validation parameters, we call <code>ValidateToken</code>. If the token can not be validated a <code>SecurityTokenException</code> is thrown. There are several derived exceptions, but in this case we just care for the <code>SecurityTokenSignatureKeyNotFoundException</code> exception, which is thrown if the <code>JwtSecurityTokenHandler</code> can not find the signature keys, that are specified in the JWT. This could be the case, when the issuer changed its signature keys, after the <code>ConfigurationManager</code> fetched the configuration. Therefore we trigger a refresh on the <code>ConfigurationManger</code> and retry to validate the JWT.</p>
+
+<p>If the validation is successful we return a <code>ClaimsPrincipal</code> which contains the claims provided by the token.</p>
+
+<p>If you are not using OpenID you need to change the <code>ConfigurationManager</code> options. Alternatively you can remove the <code>ConfigurationManger</code> and provide static signing keys via the <code>TokenValidationParameters</code>.</p>
 
         </div>
 
