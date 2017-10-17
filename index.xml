@@ -6,10 +6,20 @@
     <description>Recent content on Boris Wilhelms // Coding Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-US</language>
-    <lastBuildDate>Wed, 11 Oct 2017 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Tue, 17 Oct 2017 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="https://blog.wille-zone.de/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Secure Azure Functions with JWT token</title>
+      <link>https://blog.wille-zone.de/post/secure-azure-functions-with-jwt-token/</link>
+      <pubDate>Tue, 17 Oct 2017 00:00:00 +0000</pubDate>
+      
+      <guid>https://blog.wille-zone.de/post/secure-azure-functions-with-jwt-token/</guid>
+      <description>I have completely rewritten this post. You can find the original post here.
+Out of the box it is only possible to secure your Azure Functions via Function Keys (API-Keys), which sometimes might not fit into your requirements. When using HttpTrigger we luckily have access to the current request and are therefor able to implement our own custom authentication/authorization methods. You could for example use JWT tokens issued by an OpenID provider to control authentication/authorization.</description>
+    </item>
     
     <item>
       <title>Proper Dependency injection in Azure Functions on function level with scoped services!</title>
@@ -47,18 +57,8 @@ Creating thumbnails Since we do not want use the original picture as a thumbnail
       <pubDate>Thu, 20 Jul 2017 17:05:31 +0200</pubDate>
       
       <guid>https://blog.wille-zone.de/archive/secure-azure-functions-with-jwt-token/</guid>
-      <description>Out of the box it is only possible to secure your Azure Functions via Function Keys (API-Keys), which sometimes might not fit into your requirements. When using HttpTrigger we luckily have access to the current request and are therefor able to implement our own custom authentication/authorization methods. You could for example use jwt tokens to control authentication/authorization.
-Here is an example code on how to validate jwt tokens and controling access to your Azure Function.</description>
-    </item>
-    
-    <item>
-      <title>Secure Azure Functions with jwt token</title>
-      <link>https://blog.wille-zone.de/post/secure-azure-functions-with-jwt-token/</link>
-      <pubDate>Thu, 20 Jul 2017 17:05:31 +0200</pubDate>
-      
-      <guid>https://blog.wille-zone.de/post/secure-azure-functions-with-jwt-token/</guid>
-      <description>[Original][/archive/secure-azure-functions-with-jwt-token] Out of the box it is only possible to secure your Azure Functions via Function Keys (API-Keys), which sometimes might not fit into your requirements. When using HttpTrigger we luckily have access to the current request and are therefor able to implement our own custom authentication/authorization methods. You could for example use jwt tokens to control authentication/authorization.
-Here is an example code on how to validate jwt tokens and controling access to your Azure Function.</description>
+      <description>Please take a look at the updated post here. DO NOT USE THE CODE FROM THIS POST, WITHOUT ADDITION VALIDATION.
+Out of the box it is only possible to secure your Azure Functions via Function Keys (API-Keys), which sometimes might not fit into your requirements. When using HttpTrigger we luckily have access to the current request and are therefor able to implement our own custom authentication/authorization methods. You could for example use jwt tokens to control authentication/authorization.</description>
     </item>
     
     <item>

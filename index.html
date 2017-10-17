@@ -54,6 +54,53 @@
                 
                 
                 <header class="article-header">
+                    <h1 itemprop="name"><a class="article-title" href="./post/secure-azure-functions-with-jwt-token/">Secure Azure Functions with JWT token</a></h1>
+                </header>
+                
+                <div class="article-meta">
+                    <a href="./post/secure-azure-functions-with-jwt-token/" class="article-date">
+                        <time datetime='2017-10-17T00:00:00.000&#43;00:00' itemprop="datePublished">2017-10-17</time>
+                    </a>
+                    
+                    
+                    
+                </div>
+                <div class="article-entry" itemprop="articleBody">
+                    <p>
+                        
+                    I have completely rewritten this post. You can find the original post here.
+Out of the box it is only possible to secure your Azure Functions via Function Keys (API-Keys), which sometimes might not fit into your requirements. When using HttpTrigger we luckily have access to the current request and are therefor able to implement our own custom authentication/authorization methods. You could for example use JWT tokens issued by an OpenID provider to control authentication/authorization.
+                    </p>
+                    <p class="article-more-link">
+                        <a href="./post/secure-azure-functions-with-jwt-token/">Read More</a>
+                    </p>
+                </div>
+
+                
+                <footer class="article-footer">
+                    <ul class="article-tag-list">
+                        
+                        <li class="article-tag-list-item">
+                            <a class="article-tag-list-link" href="./tags/azure">Azure
+                            </a>
+                        </li>
+                        
+                        <li class="article-tag-list-item">
+                            <a class="article-tag-list-link" href="./tags/functions">Functions
+                            </a>
+                        </li>
+                        
+                    </ul>
+                </footer>
+                
+            </div>
+        </article>
+        
+        <article class="article article-type-post" itemscope itemprop="blogPost">
+            <div class="article-inner">
+                
+                
+                <header class="article-header">
                     <h1 itemprop="name"><a class="article-title" href="./post/azure-functions-proper-dependency-injection/">Proper Dependency injection in Azure Functions on function level with scoped services!</a></h1>
                 </header>
                 
@@ -186,53 +233,6 @@ Creating thumbnails Since we do not want use the original picture as a thumbnail
                         
                         <li class="article-tag-list-item">
                             <a class="article-tag-list-link" href="./tags/storage">Storage
-                            </a>
-                        </li>
-                        
-                    </ul>
-                </footer>
-                
-            </div>
-        </article>
-        
-        <article class="article article-type-post" itemscope itemprop="blogPost">
-            <div class="article-inner">
-                
-                
-                <header class="article-header">
-                    <h1 itemprop="name"><a class="article-title" href="./post/secure-azure-functions-with-jwt-token/">Secure Azure Functions with jwt token</a></h1>
-                </header>
-                
-                <div class="article-meta">
-                    <a href="./post/secure-azure-functions-with-jwt-token/" class="article-date">
-                        <time datetime='2017-07-20T17:05:31.000&#43;02:00' itemprop="datePublished">2017-07-20</time>
-                    </a>
-                    
-                    
-                    
-                </div>
-                <div class="article-entry" itemprop="articleBody">
-                    <p>
-                        
-                    [Original][/archive/secure-azure-functions-with-jwt-token] Out of the box it is only possible to secure your Azure Functions via Function Keys (API-Keys), which sometimes might not fit into your requirements. When using HttpTrigger we luckily have access to the current request and are therefor able to implement our own custom authentication/authorization methods. You could for example use jwt tokens to control authentication/authorization.
-Here is an example code on how to validate jwt tokens and controling access to your Azure Function.
-                    </p>
-                    <p class="article-more-link">
-                        <a href="./post/secure-azure-functions-with-jwt-token/">Read More</a>
-                    </p>
-                </div>
-
-                
-                <footer class="article-footer">
-                    <ul class="article-tag-list">
-                        
-                        <li class="article-tag-list-item">
-                            <a class="article-tag-list-link" href="./tags/azure">Azure
-                            </a>
-                        </li>
-                        
-                        <li class="article-tag-list-item">
-                            <a class="article-tag-list-link" href="./tags/functions">Functions
                             </a>
                         </li>
                         
