@@ -3,9 +3,9 @@
 
 <head>
     <meta charset="utf-8">
-    <title>Secure Azure Functions with JWT token // Boris Wilhelms // Coding Blog</title>
+    <title>Secure Azure Functions with JWT access tokens // Boris Wilhelms // Coding Blog</title>
 
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"> <meta property="og:title" content="Secure Azure Functions with JWT token" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"> <meta property="og:title" content="Secure Azure Functions with JWT access tokens" />
 <meta property="og:description" content="How to secure your Azure Function with a jwt token." />
 <meta property="og:type" content="website" />
 <meta property="og:locale" content="en_US" />
@@ -22,7 +22,7 @@
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1"> 
     <meta name="description" content="How to secure your Azure Function with a jwt token.">  
-    <meta name="keywords" content="Azure,Functions,jwt,security,"> 
+    <meta name="keywords" content="Azure,Functions,jwt,security,openid,oauth,"> 
 
     <meta name="author" content="Boris Wilhelms">
 </head>
@@ -51,7 +51,7 @@
     <div class="article-inner">
         
         <header class="article-header">
-            <h1 class="article-title" itemprop="name">Secure Azure Functions with JWT token</h1>
+            <h1 class="article-title" itemprop="name">Secure Azure Functions with JWT access tokens</h1>
         </header>
         
         <div class="article-meta">
@@ -63,9 +63,9 @@
         <div class="article-entry" itemprop="articleBody">
             <p><strong><em>I have completely rewritten this post. You can find the original post <a href="../../archive/secure-azure-functions-with-jwt-token">here</a>.</em></strong></p>
 
-<p>Out of the box it is only possible to secure your Azure Functions via Function Keys (API-Keys), which sometimes might not fit into your requirements. When using HttpTrigger we luckily have access to the current request and are therefor able to implement our own custom authentication/authorization methods. You could for example use JWT tokens issued by an OpenID provider to control authentication/authorization.</p>
+<p>Out of the box it is only possible to secure your Azure Functions via Function Keys (API-Keys), which sometimes might not fit into your requirements. When using HttpTrigger we luckily have access to the current request and are therefor able to implement our own custom authentication/authorization methods. You could for example use JWT access tokens issued by an OpenID provider to control authentication/authorization.</p>
 
-<p>In this post you learn how to validate OpenID JWT tokens and controlling access to your Azure Function.</p>
+<p>In this post you learn how to validate JWT access tokens and controlling access to your Azure Function.</p>
 
 <p>First lets see the function.</p>
 
@@ -88,7 +88,7 @@
 }
 </code></pre>
 
-<p>It is very important that you set the authorization level to anonymous, since we want to skip all checks done by Azure Functions. Then we need to add the &ldquo;authentication boilerplate code&rdquo; to every function, we want to protect with OpenID JWT tokens. Unfortunately there is currently no generic way to add this, e.g. via attributes.</p>
+<p>It is very important that you set the authorization level to anonymous, since we want to skip all checks done by Azure Functions. Then we need to add the &ldquo;authentication boilerplate code&rdquo; to every function, we want to protect with JWT access tokens. Unfortunately there is currently no generic way to add this, e.g. via attributes.</p>
 
 <p>Now we need to implement the validation method.</p>
 
