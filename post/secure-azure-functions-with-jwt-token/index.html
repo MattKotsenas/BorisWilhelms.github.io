@@ -138,7 +138,7 @@ namespace FunctionApp5
                 RequireSignedTokens = true,
                 ValidAudience = audience,
                 ValidateAudience = true,
-                ValidIssuer = issuer,
+                ValidIssuer = config.Issuer,
                 ValidateIssuer = true,
                 ValidateIssuerSigningKey = true,
                 ValidateLifetime = true,
